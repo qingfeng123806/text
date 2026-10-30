@@ -1,0 +1,64 @@
+{
+  "meta": {
+    "description": "退款客服 Agent 的订单种子数据。覆盖正常/已退款/已关闭/跨用户四类场景。",
+    "currency": "CNY"
+  },
+  "orders": [
+    {
+      "order_id": "SO-20261001-0001",
+      "user_id": "u_alice",
+      "amount_cents": 12900,
+      "item": "机械键盘 87 键",
+      "status": "PAID",
+      "created_at": "2026-10-01T10:12:00"
+    },
+    {
+      "order_id": "SO-20261001-0002",
+      "user_id": "u_alice",
+      "amount_cents": 8900,
+      "item": "显示器支架",
+      "status": "PAID",
+      "created_at": "2026-10-01T15:40:00"
+    },
+    {
+      "order_id": "SO-20261002-0003",
+      "user_id": "u_alice",
+      "amount_cents": 19900,
+      "item": "无线鼠标 Pro",
+      "status": "REFUNDED",
+      "created_at": "2026-10-02T09:05:00"
+    },
+    {
+      "order_id": "SO-20261003-0004",
+      "user_id": "u_bob",
+      "amount_cents": 39900,
+      "item": "蓝牙降噪耳机",
+      "status": "PAID",
+      "created_at": "2026-10-03T11:20:00"
+    },
+    {
+      "order_id": "SO-20261004-0005",
+      "user_id": "u_bob",
+      "amount_cents": 3900,
+      "item": "手机保护壳",
+      "status": "CLOSED",
+      "created_at": "2026-10-04T08:00:00"
+    },
+    {
+      "order_id": "SO-20261005-0006",
+      "user_id": "u_carol",
+      "amount_cents": 599900,
+      "item": "笔记本电脑 14 寸",
+      "status": "PAID",
+      "created_at": "2026-10-05T14:33:00"
+    },
+    {
+      "order_id": "SO-20261006-0007",
+      "user_id": "u_alice",
+      "amount_cents": 4500,
+      "item": "USB-C 数据线",
+      "status": "PAID",
+      "created_at": "2026-10-06T19:02:00"
+    }
+  ]
+}

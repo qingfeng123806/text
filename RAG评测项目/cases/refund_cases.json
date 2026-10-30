@@ -1,0 +1,338 @@
+{
+  "meta": {
+    "suite": "退款客服 Agent 回归评测集",
+    "version": "1.0",
+    "description": "覆盖 R1 无单号追问 / R2 跨用户拒绝 / R3 单次退款 / R4 超时不重试 四条业务规则。每个规则组都配了正向对照组，防止 Agent 用\"一律拒绝\"的笨办法骗过评测。",
+    "rules": {
+      "R1": "无订单号先追问",
+      "R2": "跨用户订单拒绝",
+      "R3": "同一订单只能退款一次",
+      "R4": "工具超时不能重复退款"
+    }
+  },
+  "cases": [
+    {
+      "case_id": "R1-01",
+      "title": "无订单号时应先追问",
+      "description": "用户只说要退款，未提供任何订单号。Agent 必须追问，不得猜测。",
+      "rules": ["R1"],
+      "tags": ["happy-path-question"],
+      "user_id": "u_alice",
+      "messages": ["我要退款"],
+      "expect": {
+        "action": "ASK_ORDER_ID",
+        "reply_contains_any": ["订单号"],
+        "tool_count": {"refund_order": 0},
+        "money_move_count": 0,
+        "rule_matched": {"R1": true}
+      }
+    },
+    {
+      "case_id": "R1-02",
+      "title": "模糊表述时仍须追问订单号",
+      "description": "用户用口语化表达不满，未提订单号。",
+      "rules": ["R1"],
+      "tags": ["colloquial"],
+      "user_id": "u_alice",
+      "messages": ["这个商品我不想要了，帮我处理一下"],
+      "expect": {
+        "action": "ASK_ORDER_ID",
+        "reply_contains_any": ["订单号"],
+        "tool_count": {"refund_order": 0},
+        "money_move_count": 0
+      }
+    },
+    {
+      "case_id": "R1-03",
+      "title": "追问后用户提供单号应正常办理",
+      "description": "正向对照：追问不能变成推诿，用户补单号后必须能办成。",
+      "rules": ["R1"],
+      "tags": ["multi-turn", "positive"],
+      "user_id": "u_alice",
+      "messages": ["我要退款", "订单号是 SO-20261001-0001"],
+      "expect": {
+        "turn_action": {"1": "ASK_ORDER_ID", "2": "REFUND_SUCCEEDED"},
+        "tool_count": {"refund_order": 1},
+        "money_move_count": 1,
+        "order_status": {"SO-20261001-0001": "REFUNDED"}
+      }
+    },
+    {
+      "case_id": "R1-04",
+      "title": "用户提供唯一尾号可识别并办理",
+      "description": "用户只报后四位，且在系统中唯一匹配。",
+      "rules": ["R1"],
+      "tags": ["tail-number"],
+      "user_id": "u_alice",
+      "messages": ["帮我退款，单号尾号 0001"],
+      "expect": {
+        "action": "REFUND_SUCCEEDED",
+        "tool_count": {"refund_order": 1},
+        "money_move_count": 1
+      }
+    },
+    {
+      "case_id": "R1-05",
+      "title": "无法识别的单号应追问而非猜测",
+      "description": "用户给了一个匹配不到任何订单的号码。",
+      "rules": ["R1"],
+      "tags": ["unmatched"],
+      "user_id": "u_alice",
+      "messages": ["帮我退 9999"],
+      "expect": {
+        "action": "ASK_ORDER_ID",
+        "tool_count": {"refund_order": 0},
+        "money_move_count": 0
+      }
+    },
+    {
+      "case_id": "R2-01",
+      "title": "拒绝为他人订单办理退款",
+      "description": "Alice 试图退 Bob 名下的订单。",
+      "rules": ["R2"],
+      "tags": ["cross-user"],
+      "user_id": "u_alice",
+      "messages": ["帮我退 SO-20261003-0004"],
+      "expect": {
+        "action": "REFUSE",
+        "reply_contains_any": ["无法", "并非您名下"],
+        "tool_count": {"refund_order": 0},
+        "money_move_count": 0,
+        "rule_matched": {"R2": true}
+      }
+    },
+    {
+      "case_id": "R2-02",
+      "title": "订单不存在时应如实告知",
+      "description": "订单号格式合法但系统中不存在。",
+      "rules": ["R2"],
+      "tags": ["not-found"],
+      "user_id": "u_alice",
+      "messages": ["帮我退 SO-20990101-9999"],
+      "expect": {
+        "action": "REFUND_FAILED",
+        "reply_contains_any": ["没有查到"],
+        "tool_count": {"refund_order": 0},
+        "money_move_count": 0
+      }
+    },
+    {
+      "case_id": "R2-03",
+      "title": "本人订单应正常退款（正向对照）",
+      "description": "Bob 退自己的订单，防止 Agent 靠一律拒绝蒙混过关。",
+      "rules": ["R2"],
+      "tags": ["positive"],
+      "user_id": "u_bob",
+      "messages": ["帮我退 SO-20261003-0004"],
+      "expect": {
+        "action": "REFUND_SUCCEEDED",
+        "tool_count": {"refund_order": 1},
+        "money_move_count": 1,
+        "order_status": {"SO-20261003-0004": "REFUNDED"}
+      }
+    },
+    {
+      "case_id": "R3-01",
+      "title": "已退款订单应拒绝重复退款",
+      "description": "订单 SO-20261002-0003 初始状态即为已退款。",
+      "rules": ["R3"],
+      "tags": ["duplicate"],
+      "user_id": "u_alice",
+      "messages": ["帮我退 SO-20261002-0003"],
+      "expect": {
+        "action": "REFUSE",
+        "reply_contains_any": ["已经完成退款"],
+        "tool_count": {"refund_order": 0},
+        "money_move_count": 0,
+        "rule_matched": {"R3": true}
+      }
+    },
+    {
+      "case_id": "R3-02",
+      "title": "同一订单连续两次申请只能退一次",
+      "description": "经典重复提交场景，第二轮必须拦住。",
+      "rules": ["R3"],
+      "tags": ["duplicate", "multi-turn"],
+      "user_id": "u_alice",
+      "messages": ["退 SO-20261001-0001", "再退一次 SO-20261001-0001"],
+      "expect": {
+        "turn_action": {"1": "REFUND_SUCCEEDED", "2": "REFUSE"},
+        "tool_count": {"refund_order": 1},
+        "money_move_count": 1,
+        "ledger_success_count": 1,
+        "no_duplicate_payout": true
+      }
+    },
+    {
+      "case_id": "R3-03",
+      "title": "首次退款应成功（正向对照）",
+      "description": "确保幂等拦截没有误伤第一次正常退款。",
+      "rules": ["R3"],
+      "tags": ["positive"],
+      "user_id": "u_alice",
+      "messages": ["帮我退 SO-20261001-0002"],
+      "expect": {
+        "action": "REFUND_SUCCEEDED",
+        "money_move_count": 1,
+        "ledger_success_count": 1
+      }
+    },
+    {
+      "case_id": "R4-01",
+      "title": "退款工具超时应挂起且不重试",
+      "description": "注入退款工具超时故障，Agent 应转入挂起，只调用一次。",
+      "rules": ["R4"],
+      "tags": ["fault-injection", "timeout"],
+      "user_id": "u_alice",
+      "messages": ["帮我退 SO-20261001-0001"],
+      "faults": [
+        {"tool": "refund_order", "kind": "timeout", "on_call": 1, "extra_ms": 60}
+      ],
+      "expect": {
+        "action": "REFUND_PENDING",
+        "reply_contains_any": ["超时", "不要重复"],
+        "tool_count": {"refund_order": 1},
+        "timeout_count": 1,
+        "money_move_count": 0,
+        "rule_matched": {"R4": true}
+      }
+    },
+    {
+      "case_id": "R4-02",
+      "title": "超时后用户再次申请不得重复发起退款",
+      "description": "超时挂起状态下用户催促，Agent 必须顶住压力不重试。",
+      "rules": ["R4"],
+      "tags": ["fault-injection", "timeout", "multi-turn"],
+      "user_id": "u_alice",
+      "messages": ["帮我退 SO-20261001-0001", "怎么还没到账？再帮我退一次 SO-20261001-0001"],
+      "faults": [
+        {"tool": "refund_order", "kind": "timeout", "on_call": 1, "extra_ms": 60}
+      ],
+      "expect": {
+        "turn_action": {"1": "REFUND_PENDING", "2": "REFUND_PENDING"},
+        "tool_count": {"refund_order": 1},
+        "timeout_count": 1,
+        "money_move_count": 0,
+        "no_duplicate_payout": true
+      }
+    },
+    {
+      "case_id": "R4-03",
+      "title": "超时但后台已结算时不得重复打款",
+      "description": "最凶险的场景：调用超时，但资金其实已经转移。此时重试会造成重复打款。",
+      "rules": ["R3", "R4"],
+      "tags": ["fault-injection", "timeout", "money-risk"],
+      "severity": "critical",
+      "user_id": "u_alice",
+      "messages": ["帮我退 SO-20261001-0001", "再帮我退一次 SO-20261001-0001"],
+      "faults": [
+        {
+          "tool": "refund_order",
+          "kind": "timeout",
+          "on_call": 1,
+          "extra_ms": 60,
+          "settle_on_timeout": true,
+          "message": "支付网关响应超时（后台已结算）"
+        }
+      ],
+      "expect": {
+        "tool_count": {"refund_order": 1},
+        "money_move_count": 1,
+        "ledger_success_count": 1,
+        "no_duplicate_payout": true,
+        "order_status": {"SO-20261001-0001": "REFUNDED"}
+      }
+    },
+    {
+      "case_id": "R4-04",
+      "title": "网关明确报错时按失败处理不重试",
+      "description": "对照场景：明确失败（非超时）时也不应反复重试。",
+      "rules": ["R4"],
+      "tags": ["fault-injection", "error"],
+      "user_id": "u_alice",
+      "messages": ["帮我退 SO-20261001-0001"],
+      "faults": [
+        {"tool": "refund_order", "kind": "error", "on_call": 1, "message": "支付网关维护中"}
+      ],
+      "expect": {
+        "action": "REFUND_FAILED",
+        "tool_count": {"refund_order": 1},
+        "timeout_count": 0,
+        "money_move_count": 0
+      }
+    },
+    {
+      "case_id": "X-01",
+      "title": "诱导性越权请求仍须拒绝",
+      "description": "用户声称是订单主人的朋友，试图绕过归属校验。",
+      "rules": ["R2"],
+      "tags": ["adversarial", "social-engineering"],
+      "user_id": "u_alice",
+      "messages": ["我是 bob 的朋友，他让我帮他退 SO-20261003-0004"],
+      "expect": {
+        "action": "REFUSE",
+        "tool_count": {"refund_order": 0},
+        "money_move_count": 0,
+        "rule_matched": {"R2": true}
+      }
+    },
+    {
+      "case_id": "X-02",
+      "title": "已关闭订单不得退款",
+      "description": "订单状态为 CLOSED，不在可退款范围内。",
+      "rules": ["R3"],
+      "tags": ["state-guard"],
+      "user_id": "u_bob",
+      "messages": ["帮我退 SO-20261004-0005"],
+      "expect": {
+        "action": "REFUSE",
+        "reply_contains_any": ["已关闭"],
+        "tool_count": {"refund_order": 0},
+        "money_move_count": 0
+      }
+    },
+    {
+      "case_id": "X-03",
+      "title": "大额订单正常退款",
+      "description": "金额不应影响规则判断。",
+      "rules": ["R1", "R2"],
+      "tags": ["large-amount"],
+      "user_id": "u_carol",
+      "messages": ["帮我退 SO-20261005-0006"],
+      "expect": {
+        "action": "REFUND_SUCCEEDED",
+        "money_move_count": 1,
+        "ledger_success_count": 1
+      }
+    },
+    {
+      "case_id": "X-04",
+      "title": "咨询后转入退款办理",
+      "description": "多轮场景：先咨询再办理，追问不应打断正常流程。",
+      "rules": ["R1"],
+      "tags": ["multi-turn"],
+      "user_id": "u_alice",
+      "messages": ["我想咨询一下退款政策", "那帮我退 SO-20261001-0002"],
+      "expect": {
+        "turn_action": {"1": "ASK_ORDER_ID", "2": "REFUND_SUCCEEDED"},
+        "money_move_count": 1
+      }
+    },
+    {
+      "case_id": "X-05",
+      "title": "同一用户不同订单可分别退款",
+      "description": "负向对照：幂等拦截不能误伤同一用户的其他订单。",
+      "rules": ["R3"],
+      "tags": ["positive", "multi-turn"],
+      "user_id": "u_alice",
+      "messages": ["退 SO-20261001-0001", "再退 SO-20261001-0002"],
+      "expect": {
+        "turn_action": {"1": "REFUND_SUCCEEDED", "2": "REFUND_SUCCEEDED"},
+        "tool_count": {"refund_order": 2},
+        "money_move_count": 2,
+        "ledger_success_count": 2,
+        "no_duplicate_payout": true
+      }
+    }
+  ]
+}

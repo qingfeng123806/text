@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agent 行为审计与回归评测控制台</title>
+<style>
+:root{
+  --bg:#f5f6f8; --panel:#fff; --panel2:#fafbfc; --ink:#1b1f24; --muted:#6b7280;
+  --line:#e5e7eb; --brand:#2f6feb; --brand-ink:#fff;
+  --ok:#15803d; --okbg:#dcfce7; --warn:#b45309; --warnbg:#ffedd5;
+  --bad:#dc2626; --badbg:#fee2e2; --crit:#991b1b; --chip:#eef2ff; --chipink:#3730a3;
+  --shadow:0 1px 3px rgba(16,24,40,.06),0 1px 2px rgba(16,24,40,.04);
+}
+html[data-theme="dark"]{
+  --bg:#111318; --panel:#181b21; --panel2:#1e222a; --ink:#e6e8eb; --muted:#9aa3af;
+  --line:#2a2f39; --brand:#5b8def; --ok:#4ade80; --okbg:#14361f; --warn:#fbbf24;
+  --warnbg:#3a2c10; --bad:#f87171; --badbg:#3d1a1a; --crit:#fca5a5;
+  --chip:#232a3d; --chipink:#a5b4fc; --shadow:0 1px 3px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  transition:background .2s,color .2s}
+a{color:var(--brand)}
+header{background:var(--panel);border-bottom:1px solid var(--line);padding:12px 22px;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:20}
+header h1{font-size:16px;margin:0;font-weight:650;letter-spacing:.2px}
+header .grow{flex:1}
+select,button,input{font:inherit;font-size:13px;padding:6px 11px;border-radius:8px;
+  border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+input{cursor:text}
+button:hover:not(:disabled){border-color:var(--brand);color:var(--brand)}
+button:disabled{opacity:.55;cursor:default}
+button.primary{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+button.primary:hover:not(:disabled){filter:brightness(1.08);color:#fff}
+nav{display:flex;gap:4px;background:var(--panel);border-bottom:1px solid var(--line);
+  padding:0 22px;overflow-x:auto;position:sticky;top:53px;z-index:19}
+nav button{border:none;background:none;padding:11px 14px;border-radius:0;color:var(--muted);
+  border-bottom:2px solid transparent;font-weight:550;white-space:nowrap}
+nav button:hover{color:var(--ink);border-color:transparent}
+nav button.on{color:var(--brand);border-bottom-color:var(--brand)}
+main{max-width:1240px;margin:0 auto;padding:22px}
+.tab{display:none} .tab.on{display:block}
+.tab.loading{opacity:.45;pointer-events:none}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 17px;box-shadow:var(--shadow)}
+.card .k{color:var(--muted);font-size:12px;letter-spacing:.4px}
+.card .v{font-size:25px;font-weight:650;margin-top:3px}
+.v.ok{color:var(--ok)} .v.bad{color:var(--bad)} .v.warn{color:var(--warn)}
+section{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:18px 20px;margin-bottom:18px;box-shadow:var(--shadow)}
+section h2{margin:0 0 3px;font-size:15.5px}
+.hint{color:var(--muted);font-size:12.5px;margin-bottom:13px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line)}
+th{background:var(--panel2);color:var(--muted);font-size:12px;font-weight:600}
+tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--panel2)}
+.bar{display:inline-block;width:130px;height:7px;background:var(--line);border-radius:5px;overflow:hidden;vertical-align:middle}
+.bar i{display:block;height:100%;background:var(--ok)}
+.bar i.warn{background:var(--warn)} .bar i.bad{background:var(--bad)}
+.pill{display:inline-block;padding:1px 8px;border-radius:6px;font-size:11.5px;font-weight:600}
+.pill.ok{background:var(--okbg);color:var(--ok)} .pill.bad{background:var(--badbg);color:var(--bad)}
+.tag{display:inline-block;padding:1px 7px;border-radius:20px;font-size:11.5px;
+  background:var(--chip);color:var(--chipink);margin-right:3px}
+.tag.r{background:var(--badbg);color:var(--crit)} .tag.o{background:var(--warnbg);color:var(--warn)}
+.tag.g{background:var(--okbg);color:var(--ok)}
+.muted{color:var(--muted)}
+details{border:1px solid var(--line);border-radius:9px;margin:8px 0;background:var(--panel)}
+summary{cursor:pointer;padding:10px 13px;font-size:13px;font-weight:600;list-style:none;
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"\25B8";color:var(--muted)}
+details[open] summary::before{transform:rotate(90deg)}
+.body{padding:2px 15px 13px;border-top:1px solid var(--line)}
+ul.chk{margin:8px 0 0;padding-left:19px}
+ul.chk li{margin:3px 0;font-size:12.5px;font-family:ui-monospace,Menlo,Consolas,monospace}
+ul.chk li.crit{color:var(--crit);font-weight:600}
+.tl{margin:6px 0 0;padding:0;list-style:none}
+.tl li{position:relative;padding:8px 0 8px 24px;border-left:2px solid var(--line);margin-left:6px}
+.tl li::before{content:"";position:absolute;left:-6px;top:14px;width:9px;height:9px;
+  border-radius:50%;background:var(--brand);border:2px solid var(--panel)}
+.tl li.user::before{background:var(--muted)}
+.tl li.tool::before{background:#0891b2}
+.tl li.rule::before{background:#7c3aed}
+.tl .who{font-size:11px;color:var(--muted);letter-spacing:.3px}
+.tl .txt{font-size:13px;margin:2px 0}
+.tl .meta{font-size:11.5px;color:var(--muted)}
+code{background:var(--panel2);padding:1px 5px;border-radius:4px;font-size:12px}
+.empty{padding:34px;text-align:center;color:var(--muted)}
+.empty code{background:var(--panel2)}
+
+/* ---- 加载状态 ---- */
+#prog{position:fixed;top:0;left:0;right:0;height:3px;z-index:100;display:none;overflow:hidden}
+#prog.on{display:block}
+#prog i{position:absolute;top:0;height:100%;width:32%;background:var(--brand);
+  border-radius:0 3px 3px 0;animation:pg 1.05s ease-in-out infinite}
+@keyframes pg{0%{left:-32%}100%{left:100%}}
+.sk{background:linear-gradient(90deg,var(--panel2) 20%,var(--line) 40%,var(--panel2) 62%);
+  background-size:300% 100%;animation:sk 1.25s linear infinite;border-radius:6px}
+@keyframes sk{0%{background-position:120% 0}100%{background-position:-20% 0}}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line);
+  border-top-color:var(--brand);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px}
+@keyframes sp{to{transform:rotate(360deg)}}
+#toast{position:fixed;right:18px;bottom:18px;z-index:90;display:none;align-items:center;gap:9px;
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 15px;
+  box-shadow:var(--shadow);font-size:12.5px;color:var(--muted)}
+#toast.on{display:flex}
+
+/* ---- 状态与提示 ---- */
+.dot{width:9px;height:9px;border-radius:50%;background:var(--muted);display:inline-block;flex:none}
+.dot.on{background:var(--ok)}
+.dot.wait{background:var(--warn);animation:pl 1s ease-in-out infinite}
+.dot.err{background:var(--bad)}
+@keyframes pl{50%{opacity:.35}}
+.banner{display:flex;align-items:center;gap:12px;padding:10px 15px;border-radius:10px;
+  margin-bottom:16px;font-size:13px;border:1px solid var(--line);background:var(--panel)}
+.banner.err{border-color:var(--bad);background:var(--badbg);color:var(--bad)}
+.banner.warn{border-color:var(--warn);background:var(--warnbg);color:var(--warn)}
+.banner .grow{flex:1}
+.guide{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:26px 28px;box-shadow:var(--shadow);max-width:760px;margin:22px auto}
+.guide h2{margin:0 0 10px;font-size:17px}
+.guide ol,.guide p{margin:10px 0}
+.guide li{margin:6px 0}
+.guide .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:16px}
+.guide input{flex:1;min-width:240px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.filters label{font-size:12.5px;color:var(--muted)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;font-size:12.8px}
+.kv .k{color:var(--muted)}
+</style>
+<script>
+/* 提前套用主题，避免深色模式下的白屏闪烁 */
+try{var _t=localStorage.getItem("agent-audit.theme");if(_t)document.documentElement.dataset.theme=_t}catch(e){}
+</script>
+</head>
+<body>
+
+<div id="prog"><i></i></div>
+
+<header>
+  <h1>🔍 Agent 行为审计与回归评测控制台</h1>
+  <span id="conn" class="dot" title="未连接"></span>
+  <div class="grow"></div>
+  <label class="muted" style="font-size:12.5px">运行</label>
+  <select id="runSel" disabled><option>正在连接…</option></select>
+  <button id="reportBtn" style="display:none" title="在新窗口打开本次运行的静态 HTML 报告">静态报告</button>
+  <button id="themeBtn" title="切换主题">🌙 深色</button>
+  <button class="primary" id="reloadBtn">刷新</button>
+</header>
+
+<nav>
+  <button class="on" data-tab="overview">总览</button>
+  <button data-tab="cases">用例与轨迹</button>
+  <button data-tab="regression">回归对比</button>
+  <button data-tab="audit">审计与不变式</button>
+</nav>
+
+<main>
+  <div id="banner" style="display:none"></div>
+  <div id="offline" style="display:none"></div>
+  <div id="tabs">
+    <div class="tab on" id="tab-overview"></div>
+    <div class="tab" id="tab-cases"></div>
+    <div class="tab" id="tab-regression"></div>
+    <div class="tab" id="tab-audit"></div>
+  </div>
+</main>
+
+<div id="toast"><span class="spin"></span><span id="toastText">加载中…</span></div>
+
+<script>
+/* ==================== 基础工具 ==================== */
+const $ = (s) => document.querySelector(s);
+const AMP = String.fromCharCode(38);
+const ENT = {};
+ENT[AMP] = AMP + "amp;";
+ENT["<"] = AMP + "lt;";
+ENT[">"] = AMP + "gt;";
+ENT['"'] = AMP + "quot;";
+ENT["'"] = AMP + "#39;";
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ENT[c] || c);
+const enc = encodeURIComponent;
+const RULE = {R1:"无订单号先追问", R2:"跨用户订单拒绝", R3:"同一订单只能退款一次", R4:"工具超时不能重复退款"};
+const TABNAME = {overview:"总览", cases:"用例与轨迹", regression:"回归对比", audit:"审计与不变式"};
+const S = {base:null, health:null, run:null, agent:null, runs:[],
+           overview:null, result:null, reg:null, audit:null, inv:null, filter:"all", lastErr:null};
+
+const IS_FILE = location.protocol === "file:";
+const DEFAULT_PORT = 8770;
+const LS_API = "agent-audit.api-base";
+const LS_THEME = "agent-audit.theme";
+const QS = new URLSearchParams(location.search);
+
+function normBase(v){
+  v = String(v ?? "").trim().replace(/\/+$/, "");
+  if(!v) return "";
+  if(/^\d+$/.test(v)) v = "http://127.0.0.1:" + v;
+  if(!/^https?:\/\//i.test(v)) v = "http://" + v;
+  return v;
+}
+
+/* 候选服务地址：URL 参数 > 上次成功的 > 同源 > 本机默认端口段。
+   file:// 直开时没有"同源"可用，只能去探测本机端口——这也是双击打开也能用的关键。 */
+function candidateBases(){
+  const out = [];
+  const add = (b) => { if(b && !out.includes(b)) out.push(b); };
+  if(QS.get("api")) add(normBase(QS.get("api")));
+  let saved = null;
+  try{ saved = localStorage.getItem(LS_API); }catch(e){}
+  if(saved) add(normBase(saved));
+  if(!IS_FILE) add(location.origin);
+  for(let p = DEFAULT_PORT; p <= DEFAULT_PORT + 4; p++) add("http://127.0.0.1:" + p);
+  return out;
+}
+
+async function api(p, timeout){
+  timeout = timeout || 10000;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeout);
+  try{
+    const r = await fetch(S.base + "/api/" + p,
+      {signal: ctrl.signal, cache: "no-store", headers: {"Accept": "application/json"}});
+    let body = null;
+    try{ body = await r.json(); }catch(e){ /* 非 JSON 响应，走下面的状态码分支 */ }
+    if(!r.ok){
+      const m = (body && body.error) || r.statusText || ("HTTP " + r.status);
+      throw new Error(m);
+    }
+    if(body === null) throw new Error("服务返回的不是 JSON：" + p);
+    return body;
+  }catch(e){
+    if(e.name === "AbortError")
+      throw new Error("请求超时（" + (timeout / 1000) + " 秒），控制台服务没有响应");
+    if(e instanceof TypeError)
+      throw new Error("连不上控制台服务 " + (S.base || location.origin) +
+                      "——请确认已执行 python run.py serve");
+    throw e;
+  }finally{
+    clearTimeout(timer);
+  }
+}
+
+/* ==================== 加载反馈 ==================== */
+let progN = 0;
+/* 返回"停止"函数：多个请求并发时，只有最后一个结束才收起进度条 */
+function progOn(){
+  progN++;
+  $("#prog").classList.add("on");
+  return () => { if(--progN <= 0){ progN = 0; $("#prog").classList.remove("on"); } };
+}
+
+let toastN = 0;
+function toast(text){
+  toastN++;
+  $("#toastText").textContent = text || "加载中…";
+  $("#toast").classList.add("on");
+  return () => { if(--toastN <= 0){ toastN = 0; $("#toast").classList.remove("on"); } };
+}
+
+function setConn(state, tip){
+  const d = $("#conn");
+  d.className = "dot" + (state === "ok" ? " on" : state === "err" ? " err" : state === "wait" ? " wait" : "");
+  d.title = tip || "未连接";
+}
+
+function banner(msg, kind){
+  const b = $("#banner");
+  b.style.display = "flex";
+  b.className = "banner " + (kind || "err");
+  b.innerHTML = "<span class='grow'>" + esc(msg) + "</span><button onclick='hideBanner()'>关闭</button>";
+}
+function hideBanner(){ $("#banner").style.display = "none"; }
+
+const SK_W = [92, 74, 86, 62, 88, 70, 80, 58];
+function skeleton(withCards){
+  const rows = Array.from({length: 6}, (_, i) =>
+    '<div class="sk" style="height:13px;margin:13px 0;width:' + SK_W[i % SK_W.length] + '%"></div>').join("");
+  const cards = withCards
+    ? '<div class="cards">' + Array.from({length: 4},
+        () => '<div class="sk" style="height:80px;border-radius:12px"></div>').join("") + '</div>'
+    : "";
+  return cards +
+    '<section><div class="sk" style="height:16px;width:200px;margin-bottom:14px"></div>' +
+    '<div class="sk" style="height:11px;width:320px;margin-bottom:16px"></div>' + rows + '</section>';
+}
+
+function errBox(e, tab){
+  return '<div class="empty" style="color:var(--bad)">' +
+    '<div style="font-size:15px;font-weight:600;margin-bottom:7px">「' + esc(TABNAME[tab] || tab) + '」加载失败</div>' +
+    '<div style="margin-bottom:14px">' + esc(e.message) + '</div>' +
+    '<button onclick="retryTab(\'' + tab + '\')">重试</button></div>';
+}
+function emptyBox(html){
+  return '<div class="empty">' + html + '</div>';
+}
+
+/* ==================== 总览 ==================== */
+async function loadOverview(){
+  S.overview = await api("overview/" + enc(S.run));
+  const o = S.overview || {}, agents = o.agents || [];
+  if(!agents.length){
+    $("#tab-overview").innerHTML = emptyBox("本次运行下没有找到任何 Agent 结果文件。");
+    return;
+  }
+  const best = Math.max.apply(null, agents.map(a => a.pass_rate || 0));
+  const crit = agents.reduce((n, a) => n + (a.critical_violations || 0), 0);
+  const fail = agents.reduce((n, a) => n + (a.failed || 0), 0);
+
+  let rows = "";
+  for(const a of agents){
+    const inv = a.invariant_violations || {};
+    const invH = Object.keys(inv).length
+      ? Object.entries(inv).sort().map(([k, v]) => '<span class="tag r">' + esc(k) + '×' + v + '</span>').join("")
+      : '<span class="muted">无</span>';
+    const pill = a.failed === 0 ? '<span class="pill ok">PASS</span>' : '<span class="pill bad">FAIL</span>';
+    rows += '<tr><td>' + pill + ' <b>' + esc(a.agent_name || a.agent_id) + '</b>' +
+        '<div class="muted" style="font-size:11.5px">' + esc(a.agent_id) + '</div></td>' +
+      '<td>' + a.passed + ' / ' + a.total + '</td>' +
+      '<td><span class="bar"><i class="' + rateCls(a.pass_rate) + '" style="width:' + a.pass_rate + '%"></i></span> ' +
+        a.pass_rate + '%</td>' +
+      '<td>' + (a.critical_violations ? '<b style="color:var(--crit)">' + a.critical_violations + '</b>' : "0") + '</td>' +
+      '<td>' + invH + '</td></tr>';
+  }
+
+  let rr = "";
+  for(const rid of ["R1", "R2", "R3", "R4"]){
+    for(const a of agents){
+      const st = (a.by_rule || {})[rid];
+      if(!st || !st.total) continue;
+      const rate = st.passed / st.total * 100;
+      rr += '<tr><td><span class="tag">' + rid + '</span>' + esc(RULE[rid]) + '</td>' +
+        '<td class="muted">' + esc(a.agent_id) + '</td><td>' + st.passed + ' / ' + st.total + '</td>' +
+        '<td><span class="bar"><i class="' + rateCls(rate) + '" style="width:' + rate + '%"></i></span> ' +
+        rate.toFixed(0) + '%</td></tr>';
+    }
+  }
+
+  $("#tab-overview").innerHTML =
+    '<div class="cards">' +
+      '<div class="card"><div class="k">参评 Agent</div><div class="v">' + agents.length + '</div></div>' +
+      '<div class="card"><div class="k">用例总数</div><div class="v">' + (o.case_count || 0) + '</div></div>' +
+      '<div class="card"><div class="k">最佳通过率</div><div class="v ' + rateCls(best) + '">' + best.toFixed(1) + '%</div></div>' +
+      '<div class="card"><div class="k">失败用例合计</div><div class="v ' + (fail ? "bad" : "ok") + '">' + fail + '</div></div>' +
+      '<div class="card"><div class="k">严重违规</div><div class="v ' + (crit ? "bad" : "ok") + '">' + crit + '</div></div>' +
+    '</div>' +
+    '<section><h2>Agent 版本横向对比</h2>' +
+      '<div class="hint">同一份用例集、同一套不变式，跑在不同版本上。通过率下降即代表该版本引入了行为退化。</div>' +
+      '<table><thead><tr><th>Agent 版本</th><th>通过/总数</th><th>通过率</th><th>严重违规</th><th>触发不变式</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody></table></section>' +
+    '<section><h2>按业务规则维度</h2>' +
+      '<div class="hint">R1 无单号追问 · R2 跨用户拒绝 · R3 单次退款 · R4 超时不重试</div>' +
+      '<table><thead><tr><th>规则</th><th>Agent</th><th>通过/总数</th><th>通过率</th></tr></thead>' +
+      '<tbody>' + (rr || '<tr><td colspan="4" class="muted">暂无数据</td></tr>') + '</tbody></table></section>';
+}
+const rateCls = (r) => r >= 99.9 ? "" : (r >= 80 ? "warn" : "bad");
+
+/* ==================== 用例与轨迹 ==================== */
+function traceHTML(t){
+  if(!t) return '<div class="muted" style="padding:8px 0">该用例没有留下轨迹。</div>';
+  let h = '<ul class="tl">';
+  for(const turn of (t.turns || [])){
+    h += '<li class="user"><span class="who">第 ' + turn.index + ' 轮 · 用户</span>' +
+         '<div class="txt">' + esc(turn.user_message) + '</div></li>';
+    const r = turn.reply || {};
+    for(const d of (r.rule_decisions || [])){
+      const bad = /DISABLED|SKIPPED/.test(d.reason_code || "");
+      h += '<li class="rule"><span class="who">规则判定 · ' + esc(d.rule_id) + '</span>' +
+        '<div class="txt"><span class="tag ' + (d.matched ? "" : "o") + '">' + (d.matched ? "命中" : "未命中") + '</span> ' +
+        '<code>' + esc(d.reason_code) + '</code> ' + esc(d.message) + ' ' +
+        (bad ? '<span class="tag r">规则被绕过</span>' : "") + '</div></li>';
+    }
+    for(const c of (r.tool_calls || [])){
+      const st = c.status, bad = (st === "TIMEOUT" || st === "ERROR");
+      h += '<li class="tool"><span class="who">工具调用 · ' + esc(c.tool) + '</span>' +
+        '<div class="txt"><code>' + esc((c.args || {}).order_id || "") + '</code> ' +
+        '<span style="color:' + (bad ? "var(--bad)" : "inherit") + '">' + esc(st) + '</span> · ' +
+        (c.money_moved ? '<b style="color:var(--crit)">💰 已动钱</b>' : '未动钱') + ' · ' + c.duration_ms + ' ms ' +
+        (c.fault ? '<span class="tag o">故障注入 ' + esc(c.fault) + '</span>' : "") + '</div>' +
+        (c.error ? '<div class="meta">' + esc(c.error) + '</div>' : "") + '</li>';
+    }
+    h += '<li><span class="who">Agent 回复 · ' + esc(r.action || "") + '</span>' +
+         '<div class="txt">' + esc(r.text || "") + '</div></li>';
+  }
+  return h + "</ul>";
+}
+
+function caseCard(c, t){
+  const rules = (c.rules || []).map(r => '<span class="tag">' + esc(r) + '</span>').join("");
+  const pill = c.passed ? '<span class="pill ok">PASS</span>' : '<span class="pill bad">FAIL</span>';
+  const crit = c.critical_count ? '<span class="tag r">CRITICAL ×' + c.critical_count + '</span>' : "";
+  let body = "";
+  if(!c.passed && (c.failed_checks || []).length){
+    body += '<div style="margin-top:9px"><b style="color:var(--bad)">失败项</b><ul class="chk">' +
+      c.failed_checks.map(f => '<li class="' + (String(f).indexOf("INV-") === 0 ? "crit" : "") + '">' + esc(f) + '</li>').join("") +
+      '</ul></div>';
+  }
+  const asrt = (c.assertions || []).length
+    ? '<div style="margin-top:10px"><b>断言明细</b>' +
+      '<table style="margin-top:5px"><thead><tr><th>类型</th><th>结果</th><th>期望</th><th>实际</th></tr></thead><tbody>' +
+      c.assertions.map(a => '<tr><td><code>' + esc(a.kind) + '</code></td>' +
+        '<td>' + (a.passed ? '<span class="pill ok">PASS</span>' : '<span class="pill bad">FAIL</span>') + '</td>' +
+        '<td class="muted" style="font-size:12px">' + esc(JSON.stringify(a.expected)) + '</td>' +
+        '<td class="muted" style="font-size:12px">' + esc(JSON.stringify(a.actual)) + '</td></tr>').join("") +
+      '</tbody></table></div>'
+    : "";
+  const inv = (c.invariants || []).length
+    ? '<div style="margin-top:10px"><b>全局不变式</b><ul class="chk">' +
+      c.invariants.map(i => '<li class="' + (i.violated && i.severity === "CRITICAL" ? "crit" : "") + '">' +
+        (i.violated ? "🔴" : "🟢") + ' ' + esc(i.inv_id) + ' [' + esc(i.severity) + '] ' + esc(i.message) + '</li>').join("") +
+      '</ul></div>'
+    : '<div style="margin-top:10px" class="muted">全局不变式：该用例的轨迹已随结果落盘，未单独保留明细。</div>';
+  return '<details class="caseDetail"><summary>' + pill + ' <code>' + esc(c.case_id) + '</code> ' +
+    esc(c.title) + ' ' + rules + crit + '</summary>' +
+    '<div class="body">' + body + asrt + inv +
+      '<div style="margin-top:11px"><b>行为轨迹回放</b>' + traceHTML(t) + '</div></div></details>';
+}
+
+async function loadCases(){
+  // 直接切到本 tab、或切换了运行时，overview 可能还没拉，这里补一次
+  if(!S.overview) S.overview = await api("overview/" + enc(S.run));
+  const agents = (S.overview && S.overview.agents) || [];
+  if(!S.agent) S.agent = (agents[0] || {}).agent_id || null;
+  if(!S.agent){
+    $("#tab-cases").innerHTML = emptyBox("本次运行没有可展示的 Agent 结果。");
+    return;
+  }
+
+  const res = await api("result/" + enc(S.run) + "/" + enc(S.agent));
+  S.result = res;
+  const cases = res.cases || [], tmap = {};
+  (res.traces || []).forEach(t => { tmap[t.case_id] = t; });
+
+  const nFail = cases.filter(c => !c.passed).length;
+  const shown = S.filter === "all" ? cases
+    : (S.filter === "fail" ? cases.filter(c => !c.passed) : cases.filter(c => c.passed));
+  const opts = agents.map(a =>
+    '<option value="' + esc(a.agent_id) + '"' + (a.agent_id === S.agent ? " selected" : "") + '>' +
+    esc(a.agent_name || a.agent_id) + '</option>').join("");
+
+  $("#tab-cases").innerHTML =
+    '<section><h2>用例结果与行为轨迹</h2>' +
+      '<div class="hint">展开任意用例可看到完整决策回放：用户说了什么、命中哪条规则、调用了什么工具、是否真的动了钱。</div>' +
+      '<div class="filters">' +
+        '<label>Agent</label><select id="agentSel">' + opts + '</select>' +
+        '<label>筛选</label><select id="filterSel">' +
+          '<option value="all"' + (S.filter === "all" ? " selected" : "") + '>全部 (' + cases.length + ')</option>' +
+          '<option value="fail"' + (S.filter === "fail" ? " selected" : "") + '>仅失败 (' + nFail + ')</option>' +
+          '<option value="pass"' + (S.filter === "pass" ? " selected" : "") + '>仅通过 (' + (cases.length - nFail) + ')</option>' +
+        '</select>' +
+        '<button id="toggleAll">全部展开</button>' +
+        '<span class="muted" style="font-size:12.5px">共显示 ' + shown.length + ' 条</span>' +
+      '</div>' +
+      (shown.length ? shown.map(c => caseCard(c, tmap[c.case_id])).join("")
+        : emptyBox("没有符合条件的用例")) +
+    '</section>';
+
+  $("#agentSel").onchange = (e) => { S.agent = e.target.value; refreshTab("cases", true); };
+  $("#filterSel").onchange = (e) => { S.filter = e.target.value; refreshTab("cases", true); };
+  $("#toggleAll").onclick = (e) => {
+    const ds = document.querySelectorAll("#tab-cases details.caseDetail");
+    const open = e.target.textContent.indexOf("展开") >= 0;
+    ds.forEach(d => { d.open = open; });
+    e.target.textContent = open ? "全部收起" : "全部展开";
+  };
+}
+
+/* ==================== 回归对比 ==================== */
+async function loadRegression(){
+  S.reg = await api("regression/" + enc(S.run));
+  const reps = S.reg.reports || [];
+  if(!reps.length){
+    $("#tab-regression").innerHTML = emptyBox(
+      "本次运行无法做回归对比（需要基线 <code>refund-agent-v1</code> 外加至少一个候选版本）。<br><br>" +
+      "执行 <code>python run.py demo</code> 可生成含 5 个缺陷变体的完整对比。");
+    return;
+  }
+
+  let h = "";
+  for(const r of reps){
+    const s = r.summary || {};
+    const verdict = s.has_regression
+      ? '<span class="pill bad">存在回归，建议拦截</span>'
+      : '<span class="pill ok">无新增回归</span>';
+    h += '<section><h2>' + esc(s.baseline_agent) + ' → ' + esc(s.candidate_agent) + '</h2>' +
+      '<div class="hint">区分"这次改坏的"与"本来就坏的"：新增失败必须拦截，存量失败可以排期。</div>' +
+      '<div style="margin-bottom:10px">' + verdict + '</div>' +
+      '<div class="kv" style="margin-bottom:10px">' +
+        '<span class="k">通过率</span><span>' + s.baseline_pass_rate + '% → <b>' + s.candidate_pass_rate + '%</b></span>' +
+        '<span class="k">新增回归</span><span><b style="color:' + (s.regressions ? "var(--bad)" : "inherit") + '">' +
+          s.regressions + '</b> 条</span>' +
+        '<span class="k">本次修复</span><span>' + s.fixed + ' 条</span>' +
+        '<span class="k">稳定通过</span><span>' + s.stable_pass + ' 条</span>' +
+        '<span class="k">存量失败</span><span>' + s.stable_fail + ' 条</span>';
+    if(Object.keys(s.rule_attribution || {}).length)
+      h += '<span class="k">退化归因</span><span>' + Object.entries(s.rule_attribution)
+        .map(([k, v]) => '<span class="tag r">' + esc(k) + ' ' + esc(RULE[k] || "") + ' ×' + v + '</span>').join("") + '</span>';
+    if(Object.keys(s.invariant_attribution || {}).length)
+      h += '<span class="k">触发不变式</span><span>' + Object.keys(s.invariant_attribution)
+        .map(k => '<span class="tag o">' + esc(k) + '</span>').join("") + '</span>';
+    h += '</div>';
+
+    let any = false;
+    for(const d of (r.diffs || [])){
+      if(d.status !== "REGRESSION") continue;
+      any = true;
+      h += '<details open><summary><span class="pill bad">REGRESSION</span> ' +
+        '<code>' + esc(d.case_id) + '</code> ' + esc(d.title) + ' ' +
+        (d.rules || []).map(x => '<span class="tag">' + esc(x) + '</span>').join("") + '</summary>' +
+        '<div class="body"><b style="color:var(--bad)">本次新增的失败项</b><ul class="chk">' +
+        (d.new_failures || []).map(f => '<li class="' + (String(f).indexOf("INV-") === 0 ? "crit" : "") + '">' +
+          esc(f) + '</li>').join("") + '</ul></div></details>';
+    }
+    if(!any) h += '<div class="muted" style="font-size:12.5px">没有新增失败的用例。</div>';
+    h += '</section>';
+  }
+  $("#tab-regression").innerHTML = h;
+}
+
+/* ==================== 审计与不变式 ==================== */
+async function loadAudit(){
+  const [a, inv] = await Promise.all([
+    api("audit/" + enc(S.run)),
+    api("invariants"),
+  ]);
+  S.audit = a; S.inv = (inv && inv.invariants) || [];
+  const checks = a.checks || [];
+  const allOk = checks.length > 0 && checks.every(c => c.ok);
+
+  const rows = checks.map(c => '<tr><td><code>' + esc(c.name) + '</code>' +
+    '<div class="muted" style="font-size:11.5px">' + esc(c.path || "") + '</div></td>' +
+    '<td>' + c.records + '</td>' +
+    '<td>' + (c.ok ? '<span class="pill ok">完整</span>' : '<span class="pill bad">断裂</span>') + ' ' +
+    '<span class="muted" style="font-size:12px">' + esc(c.message) + '</span></td></tr>').join("");
+
+  const invRows = S.inv.map(i => '<tr><td><code>' + esc(i.inv_id) + '</code></td><td>' + esc(i.name) + '</td>' +
+    '<td>' + (i.severity === "CRITICAL" ? '<span class="tag r">' + esc(i.severity) + '</span>'
+                                        : '<span class="tag o">' + esc(i.severity) + '</span>') + '</td>' +
+    '<td>' + (i.rule_id && i.rule_id !== "-" ? '<span class="tag">' + esc(i.rule_id) + '</span>'
+                                             : '<span class="muted">—</span>') + '</td>' +
+    '<td>' + esc(i.statement) + '</td></tr>').join("");
+
+  $("#tab-audit").innerHTML =
+    '<section><h2>审计链完整性校验</h2>' +
+      '<div class="hint">每条审计事件都带上一条的哈希。任何插入、删除或篡改都会让链条断裂，并精确定位到具体条数。</div>' +
+      (checks.length
+        ? '<div style="margin-bottom:10px">' + (allOk ? '<span class="pill ok">全部完整</span>'
+                                                      : '<span class="pill bad">存在断裂</span>') +
+          ' <span class="muted" style="font-size:12.5px">共 ' + checks.length + ' 条审计流，' +
+          checks.reduce((n, c) => n + (c.records || 0), 0) + ' 条事件</span></div>' +
+          '<table><thead><tr><th>审计流</th><th>事件数</th><th>校验结果</th></tr></thead><tbody>' + rows + '</tbody></table>'
+        : emptyBox("未找到审计流。若评测时关闭了审计（<code>--no-audit</code>），就不会有这个文件。")) +
+    '</section>' +
+    '<section><h2>全局不变式</h2>' +
+      '<div class="hint">对所有用例无条件生效，不依赖用例是否写了断言。这是评测层能兜底的原因。</div>' +
+      (invRows ? '<table><thead><tr><th>编号</th><th>名称</th><th>级别</th><th>关联规则</th><th>约束</th></tr></thead>' +
+        '<tbody>' + invRows + '</tbody></table>' : emptyBox("未注册不变式")) +
+    '</section>';
+}
+
+/* ==================== 调度 ==================== */
+const tabSeq = {};
+const curTab = () => (document.querySelector("nav button.on") || {}).dataset.tab || "overview";
+
+async function refreshTab(tab, force){
+  const el = $("#tab-" + tab);
+  const seq = (tabSeq[tab] = (tabSeq[tab] || 0) + 1);
+  // 已有内容且没换运行时：不清空，只做半透明 + 进度条，避免闪烁和滚动跳动
+  const fresh = force || el.dataset.loaded !== "1" || el.dataset.run !== S.run;
+  if(fresh){
+    delete el.dataset.loaded;
+    el.innerHTML = skeleton(tab === "overview" || tab === "cases");
+  }else{
+    el.classList.add("loading");
+  }
+  const stopProg = progOn(), stopToast = toast("正在加载「" + (TABNAME[tab] || tab) + "」…");
+  try{
+    if(tab === "overview")        await loadOverview();
+    else if(tab === "cases")      await loadCases();
+    else if(tab === "regression") await loadRegression();
+    else if(tab === "audit")      await loadAudit();
+    if(seq !== tabSeq[tab]) return;      // 期间又切了一次，丢弃这次的过期结果
+    el.dataset.loaded = "1";
+    el.dataset.run = S.run;
+  }catch(e){
+    if(seq !== tabSeq[tab]) return;
+    S.lastErr = e;
+    el.innerHTML = errBox(e, tab);
+  }finally{
+    el.classList.remove("loading");
+    stopProg(); stopToast();
+  }
+}
+function retryTab(tab){ refreshTab(tab, true); }
+
+/* ==================== 引导页 ==================== */
+function showGuide(html){
+  $("#offline").style.display = "block";
+  $("#offline").innerHTML = '<div class="guide">' + html + '</div>';
+  $("#tabs").style.display = "none";
+  document.querySelectorAll(".tab").forEach(t => { delete t.dataset.loaded; t.innerHTML = ""; });
+  $("#reportBtn").style.display = "none";
+}
+function hideGuide(){
+  $("#offline").style.display = "none";
+  $("#tabs").style.display = "";
+}
+
+function renderOffline(err){
+  setConn("err", "未连接");
+  $("#runSel").innerHTML = "<option>未连接</option>";
+  $("#runSel").disabled = true;
+  const detail = err ? '<p class="muted" style="word-break:break-all">' + esc(err.message) + '</p>' : "";
+  showGuide(
+    '<h2>⚠️ 连不上控制台服务</h2>' + detail +
+    (IS_FILE
+      ? '<p><b>你是用 <code>file://</code> 直接打开这个页面的。</b>浏览器不允许 <code>file://</code> 页面' +
+        '发起接口请求，所以初始化必然失败——页面代码没问题，换个方式打开就行。' +
+        '下面两种方式任选其一，服务端已放开跨域，双击打开也能连上。</p>'
+      : '<p>服务没有响应。常见原因：控制台没启动，或启动在别的端口上。</p>') +
+    '<ol>' +
+      '<li>在项目根目录生成演示数据：<code>python run.py demo</code>（已有产物可跳过）</li>' +
+      '<li>启动控制台：<code>python run.py serve</code></li>' +
+      '<li>回到这个页面点「重新连接」，或直接访问 <code>http://127.0.0.1:' + DEFAULT_PORT + '/</code></li>' +
+    '</ol>' +
+    '<p class="muted" style="font-size:12.5px">如果服务跑在别的端口，在下面填地址后连接。' +
+      '这个页面会自动依次探测 127.0.0.1 的 ' + DEFAULT_PORT + '–' + (DEFAULT_PORT + 4) + ' 端口。</p>' +
+    '<div class="row">' +
+      '<input id="baseInput" spellcheck="false" placeholder="http://127.0.0.1:' + DEFAULT_PORT + '"' +
+        ' value="' + esc(S.base || ("http://127.0.0.1:" + DEFAULT_PORT)) + '">' +
+      '<button class="primary" id="connectBtn">连接</button>' +
+      '<button id="retryBtn">重新连接</button>' +
+    '</div>');
+  $("#connectBtn").onclick = () => {
+    const v = $("#baseInput").value;
+    try{ localStorage.setItem(LS_API, normBase(v)); }catch(e){}
+    boot();
+  };
+  $("#retryBtn").onclick = () => boot();
+  const bi = $("#baseInput");
+  bi.onkeydown = (e) => { if(e.key === "Enter") $("#connectBtn").click(); };
+}
+
+function renderNoRuns(){
+  setConn("ok", "已连接 " + (S.base || location.origin));
+  $("#runSel").innerHTML = "<option>无运行记录</option>";
+  $("#runSel").disabled = true;
+  showGuide(
+    '<h2>还没有任何运行记录</h2>' +
+    '<p class="muted">服务已连上（' + esc(S.base || location.origin) + '），但 <code>' +
+      esc(((S.health || {}).runs_dir) || "runs/") + '</code> 下还没有可用的评测产物。</p>' +
+    '<ol>' +
+      '<li><code>python run.py demo</code> —— 一次跑完 6 个 Agent 变体的评测、回归对比与审计校验</li>' +
+      '<li><code>python run.py eval</code> —— 只跑基线 Agent</li>' +
+    '</ol>' +
+    '<div class="row"><button class="primary" id="retryBtn">重新检测</button></div>');
+  $("#retryBtn").onclick = () => boot();
+}
+
+/* ==================== 启动 ==================== */
+function renderRunSel(){
+  $("#runSel").innerHTML = S.runs.map(r => {
+    const n = (r.agents || []).length;
+    const when = r.mtime ? new Date(r.mtime * 1000).toLocaleString("zh-CN", {hour12: false}) : "";
+    return '<option value="' + esc(r.run_id) + '"' + (r.run_id === S.run ? " selected" : "") + '>' +
+      esc(r.run_id) + ' · ' + n + ' 个 Agent' + (when ? ' · ' + esc(when) : "") + '</option>';
+  }).join("");
+}
+
+function updateReportBtn(){
+  const cur = S.runs.find(r => r.run_id === S.run);
+  const btn = $("#reportBtn");
+  if(cur && cur.has_report){
+    btn.style.display = "";
+    btn.onclick = () => window.open(S.base + "/api/report/" + enc(S.run), "_blank");
+  }else{
+    btn.style.display = "none";
+  }
+}
+
+async function boot(){
+  hideBanner();
+  hideGuide();
+  setConn("wait", "正在连接…");
+  $("#runSel").disabled = true;
+  $("#runSel").innerHTML = "<option>正在连接…</option>";
+  const stopProg = progOn(), stopToast = toast("正在连接控制台服务…");
+
+  // 依次探测候选地址，第一个能返回健康状态的就作为本次会话的服务地址
+  S.base = null;
+  let lastErr = null;
+  for(const b of candidateBases()){
+    S.base = b;
+    try{
+      S.health = await api("health", 2500);
+      lastErr = null;
+      break;
+    }catch(e){
+      lastErr = e;
+      S.base = null;
+    }
+  }
+  if(S.base === null){
+    stopProg(); stopToast();
+    S.lastErr = lastErr;
+    renderOffline(lastErr);
+    return;
+  }
+  try{ localStorage.setItem(LS_API, S.base); }catch(e){}
+  setConn("ok", "已连接 " + S.base);
+
+  try{
+    const r = await api("runs");
+    S.runs = r.runs || [];
+  }catch(e){
+    stopProg(); stopToast();
+    renderOffline(e);
+    return;
+  }finally{
+    $("#runSel").disabled = false;
+  }
+
+  if(!S.runs.length){
+    stopProg(); stopToast();
+    renderNoRuns();
+    return;
+  }
+
+  // 选中的运行还在就用原来的，否则回到最新一次
+  if(!S.runs.some(r => r.run_id === S.run)) S.run = S.runs[0].run_id;
+  S.agent = null; S.overview = null; S.result = null;
+  renderRunSel();
+  updateReportBtn();
+  $("#runSel").onchange = (e) => {
+    S.run = e.target.value; S.agent = null; S.overview = null;
+    updateReportBtn();
+    refreshTab(curTab(), true);
+  };
+
+  stopToast();
+  try{
+    await refreshTab(curTab(), true);
+  }finally{
+    stopProg();
+  }
+}
+
+async function hardRefresh(){
+  const btn = $("#reloadBtn");
+  btn.disabled = true;
+  const old = btn.innerHTML;
+  btn.innerHTML = '<span class="spin"></span> 刷新中';
+  try{
+    // 让服务端丢掉缓存，用户在命令行重跑后点刷新才能看到新结果
+    try{ await api("refresh", 4000); }catch(e){ /* 老版本服务没有这个接口，忽略 */ }
+    document.querySelectorAll(".tab").forEach(t => { delete t.dataset.loaded; });
+    await boot();
+  }finally{
+    btn.disabled = false;
+    btn.innerHTML = old;
+  }
+}
+
+/* ==================== 事件绑定 ==================== */
+document.querySelectorAll("nav button").forEach(b => {
+  b.onclick = () => {
+    if(S.base === null){ boot(); return; }   // 离线状态下点 tab 即重新尝试连接
+    document.querySelectorAll("nav button").forEach(x => x.classList.remove("on"));
+    b.classList.add("on");
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("on"));
+    $("#tab-" + b.dataset.tab).classList.add("on");
+    refreshTab(b.dataset.tab);
+  };
+});
+$("#reloadBtn").onclick = () => hardRefresh();
+$("#themeBtn").onclick = () => {
+  const dark = document.documentElement.dataset.theme === "dark";
+  const next = dark ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  try{ localStorage.setItem(LS_THEME, next); }catch(e){}
+  $("#themeBtn").textContent = dark ? "🌙 深色" : "☀️ 浅色";
+};
+(function initTheme(){
+  const dark = document.documentElement.dataset.theme === "dark";
+  $("#themeBtn").textContent = dark ? "☀️ 浅色" : "🌙 深色";
+})();
+
+boot();
+</script>
+</body>
+</html>

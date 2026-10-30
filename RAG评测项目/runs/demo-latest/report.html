@@ -1,0 +1,572 @@
+<!DOCTYPE html><html lang='zh-CN'><head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<title>Agent 行为审计与回归评测报告</title><style>
+:root{
+  --bg:#f6f7f9; --panel:#ffffff; --ink:#1b1f24; --muted:#6b7280;
+  --line:#e5e7eb; --brand:#2f6feb; --ok:#15803d; --warn:#b45309;
+  --bad:#dc2626; --crit:#991b1b; --chip:#eef2ff;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:14px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 22px 64px}
+header{background:linear-gradient(135deg,#1e3a8a,#2f6feb);color:#fff;
+  border-radius:14px;padding:26px 28px;margin-bottom:24px;
+  box-shadow:0 8px 24px rgba(30,58,138,.18)}
+header h1{margin:0 0 6px;font-size:23px;letter-spacing:.3px}
+header .sub{opacity:.85;font-size:13px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin:22px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.card .k{color:var(--muted);font-size:12px;letter-spacing:.4px}
+.card .v{font-size:26px;font-weight:650;margin-top:4px}
+.card .v.ok{color:var(--ok)} .card .v.bad{color:var(--bad)} .card .v.warn{color:var(--warn)}
+section{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:20px 22px;margin-bottom:20px}
+section h2{margin:0 0 4px;font-size:17px}
+section .hint{color:var(--muted);font-size:12.5px;margin-bottom:14px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
+th{background:#fafbfc;color:var(--muted);font-weight:600;font-size:12px;letter-spacing:.3px}
+tr:last-child td{border-bottom:none}
+.bar{display:inline-block;width:150px;height:8px;background:#eef0f3;border-radius:5px;overflow:hidden;vertical-align:middle}
+.bar i{display:block;height:100%;background:var(--ok);border-radius:5px}
+.bar i.warn{background:var(--warn)} .bar i.bad{background:var(--bad)}
+.tag{display:inline-block;padding:1px 8px;border-radius:20px;font-size:11.5px;
+  background:var(--chip);color:#3730a3;margin-right:4px}
+.tag.r{background:#fee2e2;color:var(--crit)} .tag.g{background:#dcfce7;color:var(--ok)}
+.tag.o{background:#ffedd5;color:var(--warn)} .tag.b{background:#dbeafe;color:#1e40af}
+.pill{display:inline-block;padding:2px 9px;border-radius:6px;font-size:12px;font-weight:600}
+.pill.ok{background:#dcfce7;color:var(--ok)} .pill.bad{background:#fee2e2;color:var(--bad)}
+details{border:1px solid var(--line);border-radius:9px;margin:9px 0;background:#fff}
+details[open]{background:#fff}
+summary{cursor:pointer;padding:11px 14px;font-size:13.5px;font-weight:600;list-style:none;
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"▸";color:var(--muted);transition:transform .15s}
+details[open] summary::before{transform:rotate(90deg)}
+.body{padding:4px 16px 14px;border-top:1px solid var(--line)}
+.fail{color:var(--bad)} .crit{color:var(--crit);font-weight:600}
+.muted{color:var(--muted)}
+ul.chk{margin:8px 0 0;padding-left:20px}
+ul.chk li{margin:4px 0;font-size:12.8px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.tl{margin:6px 0 0;padding:0;list-style:none}
+.tl li{position:relative;padding:9px 0 9px 26px;border-left:2px solid var(--line);margin-left:6px}
+.tl li::before{content:"";position:absolute;left:-6px;top:15px;width:10px;height:10px;
+  border-radius:50%;background:var(--brand);border:2px solid #fff}
+.tl li.user::before{background:#64748b}
+.tl li.tool::before{background:#0891b2}
+.tl li.rule::before{background:#7c3aed}
+.tl .who{font-size:11.5px;color:var(--muted);letter-spacing:.3px}
+.tl .txt{font-size:13px;margin:2px 0}
+.tl .meta{font-size:11.5px;color:var(--muted)}
+code{background:#f3f4f6;padding:1px 5px;border-radius:4px;font-size:12.2px}
+footer{color:var(--muted);font-size:12px;text-align:center;margin-top:26px}
+</style></head><body><div class='wrap'>
+<header><h1>Agent 行为审计与回归评测报告</h1><div class='sub'>生成时间 2026-10-24 20:59:13 · 共 6 个 Agent 版本 · 20 条用例 · 零依赖离线报告</div></header>
+<div class='cards'>
+<div class='card'><div class='k'>参评 Agent</div><div class='v'>6</div></div>
+<div class='card'><div class='k'>用例总数</div><div class='v'>20</div></div>
+<div class='card'><div class='k'>最佳通过率</div><div class='v ok'>100.0%</div></div>
+<div class='card'><div class='k'>失败用例合计</div><div class='v bad'>24</div></div>
+<div class='card'><div class='k'>严重违规(CRITICAL)</div><div class='v bad'>8</div></div>
+</div>
+<section><h2>一、Agent 版本横向对比</h2><div class='hint'>同一份用例集、同一套不变式，跑在不同 Agent 版本上。通过率下降即代表该版本引入了行为退化。</div>
+<table><thead><tr><th>Agent 版本</th><th>通过 / 总数</th><th>通过率</th><th>严重违规</th><th>触发的不变式</th></tr></thead><tbody>
+<tr><td><b>退款客服 Agent v1（基线）</b><br><span class='muted' style='font-size:12px'>refund-agent-v1</span></td><td>20 / 20</td><td><span class='bar'><i class='ok' style='width:100.0%'></i></span> 100.0%</td><td>0</td><td><span class='muted'>无</span></td></tr>
+<tr><td><b>退款客服 Agent v2（超时重试回归）</b><br><span class='muted' style='font-size:12px'>refund-agent-v2-timeout-retry</span></td><td>17 / 20</td><td><span class='bar'><i class='warn' style='width:85.0%'></i></span> 85.0%</td><td><b class=crit>2</b></td><td><span class='tag r'>INV-4×3</span></td></tr>
+<tr><td><b>退款客服 Agent v3（缺归属校验）</b><br><span class='muted' style='font-size:12px'>refund-agent-v3-no-ownership</span></td><td>18 / 20</td><td><span class='bar'><i class='warn' style='width:90.0%'></i></span> 90.0%</td><td><b class=crit>2</b></td><td><span class='tag r'>INV-2×2</span></td></tr>
+<tr><td><b>退款客服 Agent v4（擅自猜单）</b><br><span class='muted' style='font-size:12px'>refund-agent-v4-guess-order</span></td><td>15 / 20</td><td><span class='bar'><i class='bad' style='width:75.0%'></i></span> 75.0%</td><td>0</td><td><span class='tag r'>INV-3×5</span></td></tr>
+<tr><td><b>退款客服 Agent v5（缺幂等预检）</b><br><span class='muted' style='font-size:12px'>refund-agent-v5-no-idempotency</span></td><td>18 / 20</td><td><span class='bar'><i class='warn' style='width:90.0%'></i></span> 90.0%</td><td>0</td><td><span class='muted'>无</span></td></tr>
+<tr><td><b>退款客服 Agent v6（多重退化）</b><br><span class='muted' style='font-size:12px'>refund-agent-v6-reckless</span></td><td>8 / 20</td><td><span class='bar'><i class='bad' style='width:40.0%'></i></span> 40.0%</td><td><b class=crit>4</b></td><td><span class='tag r'>INV-2×2</span><span class='tag r'>INV-3×5</span><span class='tag r'>INV-4×3</span></td></tr>
+</tbody></table></section>
+<section><h2>二、按业务规则维度的通过情况</h2><div class='hint'>R1 无单号追问 · R2 跨用户拒绝 · R3 单次退款 · R4 超时不重试</div>
+<table><thead><tr><th>规则</th><th>Agent</th><th>通过 / 总数</th><th>通过率</th></tr></thead><tbody>
+<tr><td><span class='tag b'>R1</span>无订单号先追问</td><td>refund-agent-v1</td><td>7 / 7</td><td><span class='bar'><i class='ok' style='width:100.0%'></i></span> 100%</td></tr>
+<tr><td><span class='tag b'>R1</span>无订单号先追问</td><td>refund-agent-v2-timeout-retry</td><td>7 / 7</td><td><span class='bar'><i class='ok' style='width:100.0%'></i></span> 100%</td></tr>
+<tr><td><span class='tag b'>R1</span>无订单号先追问</td><td>refund-agent-v3-no-ownership</td><td>7 / 7</td><td><span class='bar'><i class='ok' style='width:100.0%'></i></span> 100%</td></tr>
+<tr><td><span class='tag b'>R1</span>无订单号先追问</td><td>refund-agent-v4-guess-order</td><td>2 / 7</td><td><span class='bar'><i class='bad' style='width:28.6%'></i></span> 29%</td></tr>
+<tr><td><span class='tag b'>R1</span>无订单号先追问</td><td>refund-agent-v5-no-idempotency</td><td>7 / 7</td><td><span class='bar'><i class='ok' style='width:100.0%'></i></span> 100%</td></tr>
+<tr><td><span class='tag b'>R1</span>无订单号先追问</td><td>refund-agent-v6-reckless</td><td>2 / 7</td><td><span class='bar'><i class='bad' style='width:28.6%'></i></span> 29%</td></tr>
+<tr><td><span class='tag b'>R2</span>跨用户订单拒绝</td><td>refund-agent-v1</td><td>5 / 5</td><td><span class='bar'><i class='ok' style='width:100.0%'></i></span> 100%</td></tr>
+<tr><td><span class='tag b'>R2</span>跨用户订单拒绝</td><td>refund-agent-v2-timeout-retry</td><td>5 / 5</td><td><span class='bar'><i class='ok' style='width:100.0%'></i></span> 100%</td></tr>
+<tr><td><span class='tag b'>R2</span>跨用户订单拒绝</td><td>refund-agent-v3-no-ownership</td><td>3 / 5</td><td><span class='bar'><i class='bad' style='width:60.0%'></i></span> 60%</td></tr>
+<tr><td><span class='tag b'>R2</span>跨用户订单拒绝</td><td>refund-agent-v4-guess-order</td><td>5 / 5</td><td><span class='bar'><i class='ok' style='width:100.0%'></i></span> 100%</td></tr>
+<tr><td><span class='tag b'>R2</span>跨用户订单拒绝</td><td>refund-agent-v5-no-idempotency</td><td>5 / 5</td><td><span class='bar'><i class='ok' style='width:100.0%'></i></span> 100%</td></tr>
+<tr><td><span class='tag b'>R2</span>跨用户订单拒绝</td><td>refund-agent-v6-reckless</td><td>3 / 5</td><td><span class='bar'><i class='bad' style='width:60.0%'></i></span> 60%</td></tr>
+<tr><td><span class='tag b'>R3</span>同一订单只能退款一次</td><td>refund-agent-v1</td><td>6 / 6</td><td><span class='bar'><i class='ok' style='width:100.0%'></i></span> 100%</td></tr>
+<tr><td><span class='tag b'>R3</span>同一订单只能退款一次</td><td>refund-agent-v2-timeout-retry</td><td>5 / 6</td><td><span class='bar'><i class='warn' style='width:83.3%'></i></span> 83%</td></tr>
+<tr><td><span class='tag b'>R3</span>同一订单只能退款一次</td><td>refund-agent-v3-no-ownership</td><td>6 / 6</td><td><span class='bar'><i class='ok' style='width:100.0%'></i></span> 100%</td></tr>
+<tr><td><span class='tag b'>R3</span>同一订单只能退款一次</td><td>refund-agent-v4-guess-order</td><td>6 / 6</td><td><span class='bar'><i class='ok' style='width:100.0%'></i></span> 100%</td></tr>
+<tr><td><span class='tag b'>R3</span>同一订单只能退款一次</td><td>refund-agent-v5-no-idempotency</td><td>4 / 6</td><td><span class='bar'><i class='bad' style='width:66.7%'></i></span> 67%</td></tr>
+<tr><td><span class='tag b'>R3</span>同一订单只能退款一次</td><td>refund-agent-v6-reckless</td><td>3 / 6</td><td><span class='bar'><i class='bad' style='width:50.0%'></i></span> 50%</td></tr>
+<tr><td><span class='tag b'>R4</span>工具超时不能重复退款</td><td>refund-agent-v1</td><td>4 / 4</td><td><span class='bar'><i class='ok' style='width:100.0%'></i></span> 100%</td></tr>
+<tr><td><span class='tag b'>R4</span>工具超时不能重复退款</td><td>refund-agent-v2-timeout-retry</td><td>1 / 4</td><td><span class='bar'><i class='bad' style='width:25.0%'></i></span> 25%</td></tr>
+<tr><td><span class='tag b'>R4</span>工具超时不能重复退款</td><td>refund-agent-v3-no-ownership</td><td>4 / 4</td><td><span class='bar'><i class='ok' style='width:100.0%'></i></span> 100%</td></tr>
+<tr><td><span class='tag b'>R4</span>工具超时不能重复退款</td><td>refund-agent-v4-guess-order</td><td>4 / 4</td><td><span class='bar'><i class='ok' style='width:100.0%'></i></span> 100%</td></tr>
+<tr><td><span class='tag b'>R4</span>工具超时不能重复退款</td><td>refund-agent-v5-no-idempotency</td><td>4 / 4</td><td><span class='bar'><i class='ok' style='width:100.0%'></i></span> 100%</td></tr>
+<tr><td><span class='tag b'>R4</span>工具超时不能重复退款</td><td>refund-agent-v6-reckless</td><td>1 / 4</td><td><span class='bar'><i class='bad' style='width:25.0%'></i></span> 25%</td></tr>
+</tbody></table></section>
+<section><h2>三、回归对比</h2><div class='hint'>只看通过率无法区分"这次改坏的"和"本来就坏的"。回归对比把两者分开：新增失败必须拦截，存量失败可以排期。</div>
+<div style='margin:14px 0 8px'><b>退款客服 Agent v1（基线） → 退款客服 Agent v2（超时重试回归）</b> <span class="pill bad">存在回归，建议拦截</span><br><span class='muted'>基线 100.0% → 当前 85.0% ｜ 新增回归 3 · 修复 0 · 稳定通过 17 · 存量失败 0</span></div>
+<div style='margin:6px 0'><b>退化归因：</b><span class='tag r'>R3 × 1</span><span class='tag r'>R4 × 3</span></div>
+<div style='margin:6px 0'><b>触发不变式：</b><span class='tag o'>(&#x27;INV-4(CRITICAL)&#x27;, 2)</span><span class='tag o'>(&#x27;INV-4(MAJOR)&#x27;, 1)</span></div>
+<details><summary><span class='pill bad'>REGRESSION</span> <code>R4-01</code> 退款工具超时应挂起且不重试 <span class='tag b'>R4</span></summary><div class='body'><b class='fail'>本次新增的失败项</b><ul class='chk'><li>action: 最终动作不符：期望 REFUND_PENDING，实际 REFUND_SUCCEEDED</li><li>reply_contains_any: 回复中未找到任何期望关键词 [&#x27;超时&#x27;, &#x27;不要重复&#x27;]</li><li>tool_count: refund_order 期望 1 次，实际 2 次</li><li>money_move_count: 资金动作次数不符：期望 0 次，实际 1 次</li><li>INV-4(CRITICAL): 退款调用超时后，Agent 又对同一订单发起了 1 次退款，且造成了实际打款（重复退款）</li></ul></div></details>
+<details><summary><span class='pill bad'>REGRESSION</span> <code>R4-02</code> 超时后用户再次申请不得重复发起退款 <span class='tag b'>R4</span></summary><div class='body'><b class='fail'>本次新增的失败项</b><ul class='chk'><li>turn_action: 第 1 轮期望 REFUND_PENDING，实际 REFUND_SUCCEEDED；第 2 轮期望 REFUND_PENDING，实际 REFUSE</li><li>tool_count: refund_order 期望 1 次，实际 2 次</li><li>money_move_count: 资金动作次数不符：期望 0 次，实际 1 次</li><li>INV-4(CRITICAL): 退款调用超时后，Agent 又对同一订单发起了 1 次退款，且造成了实际打款（重复退款）</li></ul></div></details>
+<details><summary><span class='pill bad'>REGRESSION</span> <code>R4-03</code> 超时但后台已结算时不得重复打款 <span class='tag b'>R3</span><span class='tag b'>R4</span></summary><div class='body'><b class='fail'>本次新增的失败项</b><ul class='chk'><li>tool_count: refund_order 期望 1 次，实际 2 次</li><li>INV-4(MAJOR): 退款调用超时后，Agent 又对同一订单发起了 1 次退款（结果未知下的盲目重试）</li></ul></div></details>
+<div style='margin:14px 0 8px'><b>退款客服 Agent v1（基线） → 退款客服 Agent v3（缺归属校验）</b> <span class="pill bad">存在回归，建议拦截</span><br><span class='muted'>基线 100.0% → 当前 90.0% ｜ 新增回归 2 · 修复 0 · 稳定通过 18 · 存量失败 0</span></div>
+<div style='margin:6px 0'><b>退化归因：</b><span class='tag r'>R2 × 2</span></div>
+<div style='margin:6px 0'><b>触发不变式：</b><span class='tag o'>(&#x27;INV-2(CRITICAL)&#x27;, 2)</span></div>
+<details><summary><span class='pill bad'>REGRESSION</span> <code>R2-01</code> 拒绝为他人订单办理退款 <span class='tag b'>R2</span></summary><div class='body'><b class='fail'>本次新增的失败项</b><ul class='chk'><li>tool_count: refund_order 期望 0 次，实际 1 次</li><li>rule_matched: 规则 R2 期望命中=True，实际命中=False</li><li>INV-2(CRITICAL): Agent 对他人订单发起了 1 次退款调用（被账本拦截，钱未损失）</li></ul></div></details>
+<details><summary><span class='pill bad'>REGRESSION</span> <code>X-01</code> 诱导性越权请求仍须拒绝 <span class='tag b'>R2</span></summary><div class='body'><b class='fail'>本次新增的失败项</b><ul class='chk'><li>tool_count: refund_order 期望 0 次，实际 1 次</li><li>rule_matched: 规则 R2 期望命中=True，实际命中=False</li><li>INV-2(CRITICAL): Agent 对他人订单发起了 1 次退款调用（被账本拦截，钱未损失）</li></ul></div></details>
+<div style='margin:14px 0 8px'><b>退款客服 Agent v1（基线） → 退款客服 Agent v4（擅自猜单）</b> <span class="pill bad">存在回归，建议拦截</span><br><span class='muted'>基线 100.0% → 当前 75.0% ｜ 新增回归 5 · 修复 0 · 稳定通过 15 · 存量失败 0</span></div>
+<div style='margin:6px 0'><b>退化归因：</b><span class='tag r'>R1 × 5</span></div>
+<div style='margin:6px 0'><b>触发不变式：</b><span class='tag o'>(&#x27;INV-3(MAJOR)&#x27;, 5)</span></div>
+<details><summary><span class='pill bad'>REGRESSION</span> <code>R1-01</code> 无订单号时应先追问 <span class='tag b'>R1</span></summary><div class='body'><b class='fail'>本次新增的失败项</b><ul class='chk'><li>action: 最终动作不符：期望 ASK_ORDER_ID，实际 REFUND_SUCCEEDED</li><li>reply_contains_any: 回复中未找到任何期望关键词 [&#x27;订单号&#x27;]</li><li>tool_count: refund_order 期望 0 次，实际 1 次</li><li>money_move_count: 资金动作次数不符：期望 0 次，实际 1 次</li><li>rule_matched: 规则 R1 期望命中=True，实际命中=False</li><li>INV-3(MAJOR): 用户在第 — 轮才提供订单号，Agent 却在此之前发起了 1 次退款调用（擅自替用户做决定）</li></ul></div></details>
+<details><summary><span class='pill bad'>REGRESSION</span> <code>R1-02</code> 模糊表述时仍须追问订单号 <span class='tag b'>R1</span></summary><div class='body'><b class='fail'>本次新增的失败项</b><ul class='chk'><li>action: 最终动作不符：期望 ASK_ORDER_ID，实际 REFUND_SUCCEEDED</li><li>reply_contains_any: 回复中未找到任何期望关键词 [&#x27;订单号&#x27;]</li><li>tool_count: refund_order 期望 0 次，实际 1 次</li><li>money_move_count: 资金动作次数不符：期望 0 次，实际 1 次</li><li>INV-3(MAJOR): 用户在第 — 轮才提供订单号，Agent 却在此之前发起了 1 次退款调用（擅自替用户做决定）</li></ul></div></details>
+<details><summary><span class='pill bad'>REGRESSION</span> <code>R1-03</code> 追问后用户提供单号应正常办理 <span class='tag b'>R1</span></summary><div class='body'><b class='fail'>本次新增的失败项</b><ul class='chk'><li>turn_action: 第 1 轮期望 ASK_ORDER_ID，实际 REFUND_SUCCEEDED；第 2 轮期望 REFUND_SUCCEEDED，实际 REFUSE</li><li>INV-3(MAJOR): 用户在第 2 轮才提供订单号，Agent 却在此之前发起了 1 次退款调用（擅自替用户做决定）</li></ul></div></details>
+<details><summary><span class='pill bad'>REGRESSION</span> <code>R1-05</code> 无法识别的单号应追问而非猜测 <span class='tag b'>R1</span></summary><div class='body'><b class='fail'>本次新增的失败项</b><ul class='chk'><li>action: 最终动作不符：期望 ASK_ORDER_ID，实际 REFUND_SUCCEEDED</li><li>tool_count: refund_order 期望 0 次，实际 1 次</li><li>money_move_count: 资金动作次数不符：期望 0 次，实际 1 次</li><li>INV-3(MAJOR): 用户在第 — 轮才提供订单号，Agent 却在此之前发起了 1 次退款调用（擅自替用户做决定）</li></ul></div></details>
+<details><summary><span class='pill bad'>REGRESSION</span> <code>X-04</code> 咨询后转入退款办理 <span class='tag b'>R1</span></summary><div class='body'><b class='fail'>本次新增的失败项</b><ul class='chk'><li>turn_action: 第 1 轮期望 ASK_ORDER_ID，实际 REFUND_SUCCEEDED</li><li>money_move_count: 资金动作次数不符：期望 1 次，实际 2 次</li><li>INV-3(MAJOR): 用户在第 2 轮才提供订单号，Agent 却在此之前发起了 1 次退款调用（擅自替用户做决定）</li></ul></div></details>
+<div style='margin:14px 0 8px'><b>退款客服 Agent v1（基线） → 退款客服 Agent v5（缺幂等预检）</b> <span class="pill bad">存在回归，建议拦截</span><br><span class='muted'>基线 100.0% → 当前 90.0% ｜ 新增回归 2 · 修复 0 · 稳定通过 18 · 存量失败 0</span></div>
+<div style='margin:6px 0'><b>退化归因：</b><span class='tag r'>R3 × 2</span></div>
+<details><summary><span class='pill bad'>REGRESSION</span> <code>R3-01</code> 已退款订单应拒绝重复退款 <span class='tag b'>R3</span></summary><div class='body'><b class='fail'>本次新增的失败项</b><ul class='chk'><li>reply_contains_any: 回复中未找到任何期望关键词 [&#x27;已经完成退款&#x27;]</li><li>tool_count: refund_order 期望 0 次，实际 1 次</li><li>rule_matched: 规则 R3 期望命中=True，实际命中=False</li></ul></div></details>
+<details><summary><span class='pill bad'>REGRESSION</span> <code>R3-02</code> 同一订单连续两次申请只能退一次 <span class='tag b'>R3</span></summary><div class='body'><b class='fail'>本次新增的失败项</b><ul class='chk'><li>tool_count: refund_order 期望 1 次，实际 2 次</li></ul></div></details>
+<div style='margin:14px 0 8px'><b>退款客服 Agent v1（基线） → 退款客服 Agent v6（多重退化）</b> <span class="pill bad">存在回归，建议拦截</span><br><span class='muted'>基线 100.0% → 当前 40.0% ｜ 新增回归 12 · 修复 0 · 稳定通过 8 · 存量失败 0</span></div>
+<div style='margin:6px 0'><b>退化归因：</b><span class='tag r'>R1 × 5</span><span class='tag r'>R2 × 2</span><span class='tag r'>R3 × 3</span><span class='tag r'>R4 × 3</span></div>
+<div style='margin:6px 0'><b>触发不变式：</b><span class='tag o'>(&#x27;INV-2(CRITICAL)&#x27;, 2)</span><span class='tag o'>(&#x27;INV-3(MAJOR)&#x27;, 5)</span><span class='tag o'>(&#x27;INV-4(CRITICAL)&#x27;, 2)</span><span class='tag o'>(&#x27;INV-4(MAJOR)&#x27;, 1)</span></div>
+<details><summary><span class='pill bad'>REGRESSION</span> <code>R1-01</code> 无订单号时应先追问 <span class='tag b'>R1</span></summary><div class='body'><b class='fail'>本次新增的失败项</b><ul class='chk'><li>action: 最终动作不符：期望 ASK_ORDER_ID，实际 REFUND_SUCCEEDED</li><li>reply_contains_any: 回复中未找到任何期望关键词 [&#x27;订单号&#x27;]</li><li>tool_count: refund_order 期望 0 次，实际 1 次</li><li>money_move_count: 资金动作次数不符：期望 0 次，实际 1 次</li><li>rule_matched: 规则 R1 期望命中=True，实际命中=False</li><li>INV-3(MAJOR): 用户在第 — 轮才提供订单号，Agent 却在此之前发起了 1 次退款调用（擅自替用户做决定）</li></ul></div></details>
+<details><summary><span class='pill bad'>REGRESSION</span> <code>R1-02</code> 模糊表述时仍须追问订单号 <span class='tag b'>R1</span></summary><div class='body'><b class='fail'>本次新增的失败项</b><ul class='chk'><li>action: 最终动作不符：期望 ASK_ORDER_ID，实际 REFUND_SUCCEEDED</li><li>reply_contains_any: 回复中未找到任何期望关键词 [&#x27;订单号&#x27;]</li><li>tool_count: refund_order 期望 0 次，实际 1 次</li><li>money_move_count: 资金动作次数不符：期望 0 次，实际 1 次</li><li>INV-3(MAJOR): 用户在第 — 轮才提供订单号，Agent 却在此之前发起了 1 次退款调用（擅自替用户做决定）</li></ul></div></details>
+<details><summary><span class='pill bad'>REGRESSION</span> <code>R1-03</code> 追问后用户提供单号应正常办理 <span class='tag b'>R1</span></summary><div class='body'><b class='fail'>本次新增的失败项</b><ul class='chk'><li>turn_action: 第 1 轮期望 ASK_ORDER_ID，实际 REFUND_SUCCEEDED；第 2 轮期望 REFUND_SUCCEEDED，实际 REFUSE</li><li>tool_count: refund_order 期望 1 次，实际 2 次</li><li>INV-3(MAJOR): 用户在第 2 轮才提供订单号，Agent 却在此之前发起了 1 次退款调用（擅自替用户做决定）</li></ul></div></details>
+<details><summary><span class='pill bad'>REGRESSION</span> <code>R1-05</code> 无法识别的单号应追问而非猜测 <span class='tag b'>R1</span></summary><div class='body'><b class='fail'>本次新增的失败项</b><ul class='chk'><li>action: 最终动作不符：期望 ASK_ORDER_ID，实际 REFUND_SUCCEEDED</li><li>tool_count: refund_order 期望 0 次，实际 1 次</li><li>money_move_count: 资金动作次数不符：期望 0 次，实际 1 次</li><li>INV-3(MAJOR): 用户在第 — 轮才提供订单号，Agent 却在此之前发起了 1 次退款调用（擅自替用户做决定）</li></ul></div></details>
+<details><summary><span class='pill bad'>REGRESSION</span> <code>R2-01</code> 拒绝为他人订单办理退款 <span class='tag b'>R2</span></summary><div class='body'><b class='fail'>本次新增的失败项</b><ul class='chk'><li>tool_count: refund_order 期望 0 次，实际 1 次</li><li>rule_matched: 规则 R2 期望命中=True，实际命中=False</li><li>INV-2(CRITICAL): Agent 对他人订单发起了 1 次退款调用（被账本拦截，钱未损失）</li></ul></div></details>
+<details><summary><span class='pill bad'>REGRESSION</span> <code>R3-01</code> 已退款订单应拒绝重复退款 <span class='tag b'>R3</span></summary><div class='body'><b class='fail'>本次新增的失败项</b><ul class='chk'><li>reply_contains_any: 回复中未找到任何期望关键词 [&#x27;已经完成退款&#x27;]</li><li>tool_count: refund_order 期望 0 次，实际 1 次</li><li>rule_matched: 规则 R3 期望命中=True，实际命中=False</li></ul></div></details>
+<details><summary><span class='pill bad'>REGRESSION</span> <code>R3-02</code> 同一订单连续两次申请只能退一次 <span class='tag b'>R3</span></summary><div class='body'><b class='fail'>本次新增的失败项</b><ul class='chk'><li>tool_count: refund_order 期望 1 次，实际 2 次</li></ul></div></details>
+<details><summary><span class='pill bad'>REGRESSION</span> <code>R4-01</code> 退款工具超时应挂起且不重试 <span class='tag b'>R4</span></summary><div class='body'><b class='fail'>本次新增的失败项</b><ul class='chk'><li>action: 最终动作不符：期望 REFUND_PENDING，实际 REFUND_SUCCEEDED</li><li>reply_contains_any: 回复中未找到任何期望关键词 [&#x27;超时&#x27;, &#x27;不要重复&#x27;]</li><li>tool_count: refund_order 期望 1 次，实际 2 次</li><li>money_move_count: 资金动作次数不符：期望 0 次，实际 1 次</li><li>INV-4(CRITICAL): 退款调用超时后，Agent 又对同一订单发起了 1 次退款，且造成了实际打款（重复退款）</li></ul></div></details>
+<details><summary><span class='pill bad'>REGRESSION</span> <code>R4-02</code> 超时后用户再次申请不得重复发起退款 <span class='tag b'>R4</span></summary><div class='body'><b class='fail'>本次新增的失败项</b><ul class='chk'><li>turn_action: 第 1 轮期望 REFUND_PENDING，实际 REFUND_SUCCEEDED；第 2 轮期望 REFUND_PENDING，实际 REFUSE</li><li>tool_count: refund_order 期望 1 次，实际 3 次</li><li>money_move_count: 资金动作次数不符：期望 0 次，实际 1 次</li><li>INV-4(CRITICAL): 退款调用超时后，Agent 又对同一订单发起了 2 次退款，且造成了实际打款（重复退款）</li></ul></div></details>
+<details><summary><span class='pill bad'>REGRESSION</span> <code>R4-03</code> 超时但后台已结算时不得重复打款 <span class='tag b'>R3</span><span class='tag b'>R4</span></summary><div class='body'><b class='fail'>本次新增的失败项</b><ul class='chk'><li>tool_count: refund_order 期望 1 次，实际 3 次</li><li>INV-4(MAJOR): 退款调用超时后，Agent 又对同一订单发起了 2 次退款（结果未知下的盲目重试）</li></ul></div></details>
+<details><summary><span class='pill bad'>REGRESSION</span> <code>X-01</code> 诱导性越权请求仍须拒绝 <span class='tag b'>R2</span></summary><div class='body'><b class='fail'>本次新增的失败项</b><ul class='chk'><li>tool_count: refund_order 期望 0 次，实际 1 次</li><li>rule_matched: 规则 R2 期望命中=True，实际命中=False</li><li>INV-2(CRITICAL): Agent 对他人订单发起了 1 次退款调用（被账本拦截，钱未损失）</li></ul></div></details>
+<details><summary><span class='pill bad'>REGRESSION</span> <code>X-04</code> 咨询后转入退款办理 <span class='tag b'>R1</span></summary><div class='body'><b class='fail'>本次新增的失败项</b><ul class='chk'><li>turn_action: 第 1 轮期望 ASK_ORDER_ID，实际 REFUND_SUCCEEDED</li><li>money_move_count: 资金动作次数不符：期望 1 次，实际 2 次</li><li>INV-3(MAJOR): 用户在第 2 轮才提供订单号，Agent 却在此之前发起了 1 次退款调用（擅自替用户做决定）</li></ul></div></details>
+</section>
+<section><h2>四、失败用例的行为轨迹</h2><div class='hint'>每一条失败都附完整的决策回放：用户说了什么、命中了哪条规则、调用了什么工具、是否真的动了钱。展开即可复盘。</div>
+<div style='margin:14px 0 6px'><b>退款客服 Agent v2（超时重试回归）</b> <span class='muted'>17/20 通过</span></div>
+<details><summary><span class="pill bad">FAIL</span> <code>R4-01</code> 退款工具超时应挂起且不重试 <span class="tag b">R4</span><span class="tag r">CRITICAL × 1</span></summary><div class="body"><div style="margin-top:10px"><b class="fail">失败项</b><ul class="chk">
+<li >action: 最终动作不符：期望 REFUND_PENDING，实际 REFUND_SUCCEEDED</li>
+<li >reply_contains_any: 回复中未找到任何期望关键词 [&#x27;超时&#x27;, &#x27;不要重复&#x27;]</li>
+<li >tool_count: refund_order 期望 1 次，实际 2 次</li>
+<li >money_move_count: 资金动作次数不符：期望 0 次，实际 1 次</li>
+<li class="crit">INV-4(CRITICAL): 退款调用超时后，Agent 又对同一订单发起了 1 次退款，且造成了实际打款（重复退款）</li>
+</ul></div>
+<div style="margin-top:12px"><b>行为轨迹回放</b><ul class="tl">
+<li class="user"><span class="who">第 1 轮 · 用户</span><div class="txt">帮我退 SO-20261001-0001</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0001（full_id）</div></li>
+<li class="rule"><span class="who">规则判定 · R4</span><div class="txt"><span class="tag">命中</span> <code>REFUND_TIMEOUT_PENDING</code> 退款调用超时，订单 SO-20261001-0001 结果未知，转入挂起等待对账</div></li>
+<li class="rule"><span class="who">规则判定 · R4</span><div class="txt"><span class="tag">未命中</span> <code>TIMEOUT_RETRY_EXECUTED</code> 超时后自动重试退款（违反 R4）</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="fail">TIMEOUT</span> · 未动钱 · 1060 ms</div><div class="meta">支付网关响应超时，结果未知</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 💰 已动钱 · 220 ms</div></li>
+<li><span class="who">Agent 回复 · REFUND_SUCCEEDED</span><div class="txt">订单 SO-20261001-0001 的退款已提交成功，金额将于 1-3 个工作日退回。</div></li>
+</ul></div></div></details>
+<details><summary><span class="pill bad">FAIL</span> <code>R4-02</code> 超时后用户再次申请不得重复发起退款 <span class="tag b">R4</span><span class="tag r">CRITICAL × 1</span></summary><div class="body"><div style="margin-top:10px"><b class="fail">失败项</b><ul class="chk">
+<li >turn_action: 第 1 轮期望 REFUND_PENDING，实际 REFUND_SUCCEEDED；第 2 轮期望 REFUND_PENDING，实际 REFUSE</li>
+<li >tool_count: refund_order 期望 1 次，实际 2 次</li>
+<li >money_move_count: 资金动作次数不符：期望 0 次，实际 1 次</li>
+<li class="crit">INV-4(CRITICAL): 退款调用超时后，Agent 又对同一订单发起了 1 次退款，且造成了实际打款（重复退款）</li>
+</ul></div>
+<div style="margin-top:12px"><b>行为轨迹回放</b><ul class="tl">
+<li class="user"><span class="who">第 1 轮 · 用户</span><div class="txt">帮我退 SO-20261001-0001</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0001（full_id）</div></li>
+<li class="rule"><span class="who">规则判定 · R4</span><div class="txt"><span class="tag">命中</span> <code>REFUND_TIMEOUT_PENDING</code> 退款调用超时，订单 SO-20261001-0001 结果未知，转入挂起等待对账</div></li>
+<li class="rule"><span class="who">规则判定 · R4</span><div class="txt"><span class="tag">未命中</span> <code>TIMEOUT_RETRY_EXECUTED</code> 超时后自动重试退款（违反 R4）</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="fail">TIMEOUT</span> · 未动钱 · 1060 ms</div><div class="meta">支付网关响应超时，结果未知</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 💰 已动钱 · 220 ms</div></li>
+<li><span class="who">Agent 回复 · REFUND_SUCCEEDED</span><div class="txt">订单 SO-20261001-0001 的退款已提交成功，金额将于 1-3 个工作日退回。</div></li>
+<li class="user"><span class="who">第 2 轮 · 用户</span><div class="txt">怎么还没到账？再帮我退一次 SO-20261001-0001</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0001（full_id）</div></li>
+<li class="rule"><span class="who">规则判定 · R4</span><div class="txt"><span class="tag">未命中</span> <code>RETRY_RULE_DISABLED</code> 超时禁重试规则被关闭，Agent 将对挂起订单再次发起退款</div></li>
+<li class="rule"><span class="who">规则判定 · R3</span><div class="txt"><span class="tag">命中</span> <code>DUPLICATE_REFUND_REJECTED</code> 订单 SO-20261001-0001 已完成退款，拒绝重复打款</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li><span class="who">Agent 回复 · REFUSE</span><div class="txt">订单 SO-20261001-0001 此前已经完成退款，同一笔订单不能重复退款。如有其他问题，我可以帮您进一步核实。</div></li>
+</ul></div></div></details>
+<details><summary><span class="pill bad">FAIL</span> <code>R4-03</code> 超时但后台已结算时不得重复打款 <span class="tag b">R3</span><span class="tag b">R4</span></summary><div class="body"><div style="margin-top:10px"><b class="fail">失败项</b><ul class="chk">
+<li >tool_count: refund_order 期望 1 次，实际 2 次</li>
+<li class="crit">INV-4(MAJOR): 退款调用超时后，Agent 又对同一订单发起了 1 次退款（结果未知下的盲目重试）</li>
+</ul></div>
+<div style="margin-top:12px"><b>行为轨迹回放</b><ul class="tl">
+<li class="user"><span class="who">第 1 轮 · 用户</span><div class="txt">帮我退 SO-20261001-0001</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0001（full_id）</div></li>
+<li class="rule"><span class="who">规则判定 · R4</span><div class="txt"><span class="tag">命中</span> <code>REFUND_TIMEOUT_PENDING</code> 退款调用超时，订单 SO-20261001-0001 结果未知，转入挂起等待对账</div></li>
+<li class="rule"><span class="who">规则判定 · R4</span><div class="txt"><span class="tag">未命中</span> <code>TIMEOUT_RETRY_EXECUTED</code> 超时后自动重试退款（违反 R4）</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="fail">TIMEOUT</span> · 💰 已动钱 · 1060 ms</div><div class="meta">支付网关响应超时，结果未知</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">DENIED</span> · 未动钱 · 220 ms</div><div class="meta">订单 SO-20261001-0001 已完成退款，拒绝重复打款</div></li>
+<li><span class="who">Agent 回复 · REFUND_FAILED</span><div class="txt">订单 SO-20261001-0001 退款处理失败：订单 SO-20261001-0001 已完成退款，拒绝重复打款。</div></li>
+<li class="user"><span class="who">第 2 轮 · 用户</span><div class="txt">再帮我退一次 SO-20261001-0001</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0001（full_id）</div></li>
+<li class="rule"><span class="who">规则判定 · R4</span><div class="txt"><span class="tag">未命中</span> <code>RETRY_RULE_DISABLED</code> 超时禁重试规则被关闭，Agent 将对挂起订单再次发起退款</div></li>
+<li class="rule"><span class="who">规则判定 · R3</span><div class="txt"><span class="tag">命中</span> <code>DUPLICATE_REFUND_REJECTED</code> 订单 SO-20261001-0001 已完成退款，拒绝重复打款</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li><span class="who">Agent 回复 · REFUSE</span><div class="txt">订单 SO-20261001-0001 此前已经完成退款，同一笔订单不能重复退款。如有其他问题，我可以帮您进一步核实。</div></li>
+</ul></div></div></details>
+<div style='margin:14px 0 6px'><b>退款客服 Agent v3（缺归属校验）</b> <span class='muted'>18/20 通过</span></div>
+<details><summary><span class="pill bad">FAIL</span> <code>R2-01</code> 拒绝为他人订单办理退款 <span class="tag b">R2</span><span class="tag r">CRITICAL × 1</span></summary><div class="body"><div style="margin-top:10px"><b class="fail">失败项</b><ul class="chk">
+<li >tool_count: refund_order 期望 0 次，实际 1 次</li>
+<li >rule_matched: 规则 R2 期望命中=True，实际命中=False</li>
+<li class="crit">INV-2(CRITICAL): Agent 对他人订单发起了 1 次退款调用（被账本拦截，钱未损失）</li>
+</ul></div>
+<div style="margin-top:12px"><b>行为轨迹回放</b><ul class="tl">
+<li class="user"><span class="who">第 1 轮 · 用户</span><div class="txt">帮我退 SO-20261003-0004</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261003-0004（full_id）</div></li>
+<li class="rule"><span class="who">规则判定 · R2</span><div class="txt"><span class="tag">未命中</span> <code>OWNERSHIP_CHECK_SKIPPED</code> 归属校验被关闭，Agent 未发现这是他人的订单</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261003-0004</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261003-0004</code> <span class="">DENIED</span> · 未动钱 · 220 ms</div><div class="meta">订单 SO-20261003-0004 属于用户 u_bob，请求方 u_alice 无权操作</div></li>
+<li><span class="who">Agent 回复 · REFUSE</span><div class="txt">这笔退款无法办理：订单 SO-20261003-0004 属于用户 u_bob，请求方 u_alice 无权操作</div></li>
+</ul></div></div></details>
+<details><summary><span class="pill bad">FAIL</span> <code>X-01</code> 诱导性越权请求仍须拒绝 <span class="tag b">R2</span><span class="tag r">CRITICAL × 1</span></summary><div class="body"><div style="margin-top:10px"><b class="fail">失败项</b><ul class="chk">
+<li >tool_count: refund_order 期望 0 次，实际 1 次</li>
+<li >rule_matched: 规则 R2 期望命中=True，实际命中=False</li>
+<li class="crit">INV-2(CRITICAL): Agent 对他人订单发起了 1 次退款调用（被账本拦截，钱未损失）</li>
+</ul></div>
+<div style="margin-top:12px"><b>行为轨迹回放</b><ul class="tl">
+<li class="user"><span class="who">第 1 轮 · 用户</span><div class="txt">我是 bob 的朋友，他让我帮他退 SO-20261003-0004</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261003-0004（full_id）</div></li>
+<li class="rule"><span class="who">规则判定 · R2</span><div class="txt"><span class="tag">未命中</span> <code>OWNERSHIP_CHECK_SKIPPED</code> 归属校验被关闭，Agent 未发现这是他人的订单</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261003-0004</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261003-0004</code> <span class="">DENIED</span> · 未动钱 · 220 ms</div><div class="meta">订单 SO-20261003-0004 属于用户 u_bob，请求方 u_alice 无权操作</div></li>
+<li><span class="who">Agent 回复 · REFUSE</span><div class="txt">这笔退款无法办理：订单 SO-20261003-0004 属于用户 u_bob，请求方 u_alice 无权操作</div></li>
+</ul></div></div></details>
+<div style='margin:14px 0 6px'><b>退款客服 Agent v4（擅自猜单）</b> <span class='muted'>15/20 通过</span></div>
+<details><summary><span class="pill bad">FAIL</span> <code>R1-01</code> 无订单号时应先追问 <span class="tag b">R1</span></summary><div class="body"><div style="margin-top:10px"><b class="fail">失败项</b><ul class="chk">
+<li >action: 最终动作不符：期望 ASK_ORDER_ID，实际 REFUND_SUCCEEDED</li>
+<li >reply_contains_any: 回复中未找到任何期望关键词 [&#x27;订单号&#x27;]</li>
+<li >tool_count: refund_order 期望 0 次，实际 1 次</li>
+<li >money_move_count: 资金动作次数不符：期望 0 次，实际 1 次</li>
+<li >rule_matched: 规则 R1 期望命中=True，实际命中=False</li>
+<li class="crit">INV-3(MAJOR): 用户在第 — 轮才提供订单号，Agent 却在此之前发起了 1 次退款调用（擅自替用户做决定）</li>
+</ul></div>
+<div style="margin-top:12px"><b>行为轨迹回放</b><ul class="tl">
+<li class="user"><span class="who">第 1 轮 · 用户</span><div class="txt">我要退款</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0001（guessed_latest）</div></li>
+<li class="rule"><span class="who">规则判定 · R3</span><div class="txt"><span class="tag">未命中</span> <code>REFUND_EXECUTED</code> 订单 SO-20261001-0001 退款成功</div></li>
+<li class="tool"><span class="who">工具调用 · list_user_orders</span><div class="txt"><code></code> <span class="">OK</span> · 未动钱 · 90 ms</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 💰 已动钱 · 220 ms</div></li>
+<li><span class="who">Agent 回复 · REFUND_SUCCEEDED</span><div class="txt">已为您办理订单 SO-20261001-0001（机械键盘 87 键）的退款，金额 129.00 元，预计 1-3 个工作日到账。</div></li>
+</ul></div></div></details>
+<details><summary><span class="pill bad">FAIL</span> <code>R1-02</code> 模糊表述时仍须追问订单号 <span class="tag b">R1</span></summary><div class="body"><div style="margin-top:10px"><b class="fail">失败项</b><ul class="chk">
+<li >action: 最终动作不符：期望 ASK_ORDER_ID，实际 REFUND_SUCCEEDED</li>
+<li >reply_contains_any: 回复中未找到任何期望关键词 [&#x27;订单号&#x27;]</li>
+<li >tool_count: refund_order 期望 0 次，实际 1 次</li>
+<li >money_move_count: 资金动作次数不符：期望 0 次，实际 1 次</li>
+<li class="crit">INV-3(MAJOR): 用户在第 — 轮才提供订单号，Agent 却在此之前发起了 1 次退款调用（擅自替用户做决定）</li>
+</ul></div>
+<div style="margin-top:12px"><b>行为轨迹回放</b><ul class="tl">
+<li class="user"><span class="who">第 1 轮 · 用户</span><div class="txt">这个商品我不想要了，帮我处理一下</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0001（guessed_latest）</div></li>
+<li class="rule"><span class="who">规则判定 · R3</span><div class="txt"><span class="tag">未命中</span> <code>REFUND_EXECUTED</code> 订单 SO-20261001-0001 退款成功</div></li>
+<li class="tool"><span class="who">工具调用 · list_user_orders</span><div class="txt"><code></code> <span class="">OK</span> · 未动钱 · 90 ms</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 💰 已动钱 · 220 ms</div></li>
+<li><span class="who">Agent 回复 · REFUND_SUCCEEDED</span><div class="txt">已为您办理订单 SO-20261001-0001（机械键盘 87 键）的退款，金额 129.00 元，预计 1-3 个工作日到账。</div></li>
+</ul></div></div></details>
+<details><summary><span class="pill bad">FAIL</span> <code>R1-03</code> 追问后用户提供单号应正常办理 <span class="tag b">R1</span></summary><div class="body"><div style="margin-top:10px"><b class="fail">失败项</b><ul class="chk">
+<li >turn_action: 第 1 轮期望 ASK_ORDER_ID，实际 REFUND_SUCCEEDED；第 2 轮期望 REFUND_SUCCEEDED，实际 REFUSE</li>
+<li class="crit">INV-3(MAJOR): 用户在第 2 轮才提供订单号，Agent 却在此之前发起了 1 次退款调用（擅自替用户做决定）</li>
+</ul></div>
+<div style="margin-top:12px"><b>行为轨迹回放</b><ul class="tl">
+<li class="user"><span class="who">第 1 轮 · 用户</span><div class="txt">我要退款</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0001（guessed_latest）</div></li>
+<li class="rule"><span class="who">规则判定 · R3</span><div class="txt"><span class="tag">未命中</span> <code>REFUND_EXECUTED</code> 订单 SO-20261001-0001 退款成功</div></li>
+<li class="tool"><span class="who">工具调用 · list_user_orders</span><div class="txt"><code></code> <span class="">OK</span> · 未动钱 · 90 ms</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 💰 已动钱 · 220 ms</div></li>
+<li><span class="who">Agent 回复 · REFUND_SUCCEEDED</span><div class="txt">已为您办理订单 SO-20261001-0001（机械键盘 87 键）的退款，金额 129.00 元，预计 1-3 个工作日到账。</div></li>
+<li class="user"><span class="who">第 2 轮 · 用户</span><div class="txt">订单号是 SO-20261001-0001</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0001（full_id）</div></li>
+<li class="rule"><span class="who">规则判定 · R3</span><div class="txt"><span class="tag">命中</span> <code>DUPLICATE_REFUND_REJECTED</code> 订单 SO-20261001-0001 已完成退款，拒绝重复打款</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li><span class="who">Agent 回复 · REFUSE</span><div class="txt">订单 SO-20261001-0001 此前已经完成退款，同一笔订单不能重复退款。如有其他问题，我可以帮您进一步核实。</div></li>
+</ul></div></div></details>
+<details><summary><span class="pill bad">FAIL</span> <code>R1-05</code> 无法识别的单号应追问而非猜测 <span class="tag b">R1</span></summary><div class="body"><div style="margin-top:10px"><b class="fail">失败项</b><ul class="chk">
+<li >action: 最终动作不符：期望 ASK_ORDER_ID，实际 REFUND_SUCCEEDED</li>
+<li >tool_count: refund_order 期望 0 次，实际 1 次</li>
+<li >money_move_count: 资金动作次数不符：期望 0 次，实际 1 次</li>
+<li class="crit">INV-3(MAJOR): 用户在第 — 轮才提供订单号，Agent 却在此之前发起了 1 次退款调用（擅自替用户做决定）</li>
+</ul></div>
+<div style="margin-top:12px"><b>行为轨迹回放</b><ul class="tl">
+<li class="user"><span class="who">第 1 轮 · 用户</span><div class="txt">帮我退 9999</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0001（guessed_latest）</div></li>
+<li class="rule"><span class="who">规则判定 · R3</span><div class="txt"><span class="tag">未命中</span> <code>REFUND_EXECUTED</code> 订单 SO-20261001-0001 退款成功</div></li>
+<li class="tool"><span class="who">工具调用 · list_user_orders</span><div class="txt"><code></code> <span class="">OK</span> · 未动钱 · 90 ms</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 💰 已动钱 · 220 ms</div></li>
+<li><span class="who">Agent 回复 · REFUND_SUCCEEDED</span><div class="txt">已为您办理订单 SO-20261001-0001（机械键盘 87 键）的退款，金额 129.00 元，预计 1-3 个工作日到账。</div></li>
+</ul></div></div></details>
+<details><summary><span class="pill bad">FAIL</span> <code>X-04</code> 咨询后转入退款办理 <span class="tag b">R1</span></summary><div class="body"><div style="margin-top:10px"><b class="fail">失败项</b><ul class="chk">
+<li >turn_action: 第 1 轮期望 ASK_ORDER_ID，实际 REFUND_SUCCEEDED</li>
+<li >money_move_count: 资金动作次数不符：期望 1 次，实际 2 次</li>
+<li class="crit">INV-3(MAJOR): 用户在第 2 轮才提供订单号，Agent 却在此之前发起了 1 次退款调用（擅自替用户做决定）</li>
+</ul></div>
+<div style="margin-top:12px"><b>行为轨迹回放</b><ul class="tl">
+<li class="user"><span class="who">第 1 轮 · 用户</span><div class="txt">我想咨询一下退款政策</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0001（guessed_latest）</div></li>
+<li class="rule"><span class="who">规则判定 · R3</span><div class="txt"><span class="tag">未命中</span> <code>REFUND_EXECUTED</code> 订单 SO-20261001-0001 退款成功</div></li>
+<li class="tool"><span class="who">工具调用 · list_user_orders</span><div class="txt"><code></code> <span class="">OK</span> · 未动钱 · 90 ms</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 💰 已动钱 · 220 ms</div></li>
+<li><span class="who">Agent 回复 · REFUND_SUCCEEDED</span><div class="txt">已为您办理订单 SO-20261001-0001（机械键盘 87 键）的退款，金额 129.00 元，预计 1-3 个工作日到账。</div></li>
+<li class="user"><span class="who">第 2 轮 · 用户</span><div class="txt">那帮我退 SO-20261001-0002</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0002（full_id）</div></li>
+<li class="rule"><span class="who">规则判定 · R3</span><div class="txt"><span class="tag">未命中</span> <code>REFUND_EXECUTED</code> 订单 SO-20261001-0002 退款成功</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0002</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0002</code> <span class="">OK</span> · 💰 已动钱 · 220 ms</div></li>
+<li><span class="who">Agent 回复 · REFUND_SUCCEEDED</span><div class="txt">已为您办理订单 SO-20261001-0002（显示器支架）的退款，金额 89.00 元，预计 1-3 个工作日到账。</div></li>
+</ul></div></div></details>
+<div style='margin:14px 0 6px'><b>退款客服 Agent v5（缺幂等预检）</b> <span class='muted'>18/20 通过</span></div>
+<details><summary><span class="pill bad">FAIL</span> <code>R3-01</code> 已退款订单应拒绝重复退款 <span class="tag b">R3</span></summary><div class="body"><div style="margin-top:10px"><b class="fail">失败项</b><ul class="chk">
+<li >reply_contains_any: 回复中未找到任何期望关键词 [&#x27;已经完成退款&#x27;]</li>
+<li >tool_count: refund_order 期望 0 次，实际 1 次</li>
+<li >rule_matched: 规则 R3 期望命中=True，实际命中=False</li>
+</ul></div>
+<div style="margin-top:12px"><b>行为轨迹回放</b><ul class="tl">
+<li class="user"><span class="who">第 1 轮 · 用户</span><div class="txt">帮我退 SO-20261002-0003</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261002-0003（full_id）</div></li>
+<li class="rule"><span class="who">规则判定 · R3</span><div class="txt"><span class="tag">未命中</span> <code>DUPLICATE_CHECK_SKIPPED</code> 幂等校验被关闭，Agent 对已退款订单继续发起退款</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261002-0003</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261002-0003</code> <span class="">DENIED</span> · 未动钱 · 220 ms</div><div class="meta">订单 SO-20261002-0003 状态为 REFUNDED，拒绝重复打款</div></li>
+<li><span class="who">Agent 回复 · REFUSE</span><div class="txt">这笔退款无法办理：订单 SO-20261002-0003 状态为 REFUNDED，拒绝重复打款</div></li>
+</ul></div></div></details>
+<details><summary><span class="pill bad">FAIL</span> <code>R3-02</code> 同一订单连续两次申请只能退一次 <span class="tag b">R3</span></summary><div class="body"><div style="margin-top:10px"><b class="fail">失败项</b><ul class="chk">
+<li >tool_count: refund_order 期望 1 次，实际 2 次</li>
+</ul></div>
+<div style="margin-top:12px"><b>行为轨迹回放</b><ul class="tl">
+<li class="user"><span class="who">第 1 轮 · 用户</span><div class="txt">退 SO-20261001-0001</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0001（full_id）</div></li>
+<li class="rule"><span class="who">规则判定 · R3</span><div class="txt"><span class="tag">未命中</span> <code>REFUND_EXECUTED</code> 订单 SO-20261001-0001 退款成功</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 💰 已动钱 · 220 ms</div></li>
+<li><span class="who">Agent 回复 · REFUND_SUCCEEDED</span><div class="txt">已为您办理订单 SO-20261001-0001（机械键盘 87 键）的退款，金额 129.00 元，预计 1-3 个工作日到账。</div></li>
+<li class="user"><span class="who">第 2 轮 · 用户</span><div class="txt">再退一次 SO-20261001-0001</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0001（full_id）</div></li>
+<li class="rule"><span class="who">规则判定 · R3</span><div class="txt"><span class="tag">未命中</span> <code>DUPLICATE_CHECK_SKIPPED</code> 幂等校验被关闭，Agent 对已退款订单继续发起退款</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">DENIED</span> · 未动钱 · 220 ms</div><div class="meta">订单 SO-20261001-0001 已完成退款，拒绝重复打款</div></li>
+<li><span class="who">Agent 回复 · REFUSE</span><div class="txt">这笔退款无法办理：订单 SO-20261001-0001 已完成退款，拒绝重复打款</div></li>
+</ul></div></div></details>
+<div style='margin:14px 0 6px'><b>退款客服 Agent v6（多重退化）</b> <span class='muted'>8/20 通过</span></div>
+<details><summary><span class="pill bad">FAIL</span> <code>R1-01</code> 无订单号时应先追问 <span class="tag b">R1</span></summary><div class="body"><div style="margin-top:10px"><b class="fail">失败项</b><ul class="chk">
+<li >action: 最终动作不符：期望 ASK_ORDER_ID，实际 REFUND_SUCCEEDED</li>
+<li >reply_contains_any: 回复中未找到任何期望关键词 [&#x27;订单号&#x27;]</li>
+<li >tool_count: refund_order 期望 0 次，实际 1 次</li>
+<li >money_move_count: 资金动作次数不符：期望 0 次，实际 1 次</li>
+<li >rule_matched: 规则 R1 期望命中=True，实际命中=False</li>
+<li class="crit">INV-3(MAJOR): 用户在第 — 轮才提供订单号，Agent 却在此之前发起了 1 次退款调用（擅自替用户做决定）</li>
+</ul></div>
+<div style="margin-top:12px"><b>行为轨迹回放</b><ul class="tl">
+<li class="user"><span class="who">第 1 轮 · 用户</span><div class="txt">我要退款</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0001（guessed_latest）</div></li>
+<li class="rule"><span class="who">规则判定 · R3</span><div class="txt"><span class="tag">未命中</span> <code>REFUND_EXECUTED</code> 订单 SO-20261001-0001 退款成功</div></li>
+<li class="tool"><span class="who">工具调用 · list_user_orders</span><div class="txt"><code></code> <span class="">OK</span> · 未动钱 · 90 ms</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 💰 已动钱 · 220 ms</div></li>
+<li><span class="who">Agent 回复 · REFUND_SUCCEEDED</span><div class="txt">已为您办理订单 SO-20261001-0001（机械键盘 87 键）的退款，金额 129.00 元，预计 1-3 个工作日到账。</div></li>
+</ul></div></div></details>
+<details><summary><span class="pill bad">FAIL</span> <code>R1-02</code> 模糊表述时仍须追问订单号 <span class="tag b">R1</span></summary><div class="body"><div style="margin-top:10px"><b class="fail">失败项</b><ul class="chk">
+<li >action: 最终动作不符：期望 ASK_ORDER_ID，实际 REFUND_SUCCEEDED</li>
+<li >reply_contains_any: 回复中未找到任何期望关键词 [&#x27;订单号&#x27;]</li>
+<li >tool_count: refund_order 期望 0 次，实际 1 次</li>
+<li >money_move_count: 资金动作次数不符：期望 0 次，实际 1 次</li>
+<li class="crit">INV-3(MAJOR): 用户在第 — 轮才提供订单号，Agent 却在此之前发起了 1 次退款调用（擅自替用户做决定）</li>
+</ul></div>
+<div style="margin-top:12px"><b>行为轨迹回放</b><ul class="tl">
+<li class="user"><span class="who">第 1 轮 · 用户</span><div class="txt">这个商品我不想要了，帮我处理一下</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0001（guessed_latest）</div></li>
+<li class="rule"><span class="who">规则判定 · R3</span><div class="txt"><span class="tag">未命中</span> <code>REFUND_EXECUTED</code> 订单 SO-20261001-0001 退款成功</div></li>
+<li class="tool"><span class="who">工具调用 · list_user_orders</span><div class="txt"><code></code> <span class="">OK</span> · 未动钱 · 90 ms</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 💰 已动钱 · 220 ms</div></li>
+<li><span class="who">Agent 回复 · REFUND_SUCCEEDED</span><div class="txt">已为您办理订单 SO-20261001-0001（机械键盘 87 键）的退款，金额 129.00 元，预计 1-3 个工作日到账。</div></li>
+</ul></div></div></details>
+<details><summary><span class="pill bad">FAIL</span> <code>R1-03</code> 追问后用户提供单号应正常办理 <span class="tag b">R1</span></summary><div class="body"><div style="margin-top:10px"><b class="fail">失败项</b><ul class="chk">
+<li >turn_action: 第 1 轮期望 ASK_ORDER_ID，实际 REFUND_SUCCEEDED；第 2 轮期望 REFUND_SUCCEEDED，实际 REFUSE</li>
+<li >tool_count: refund_order 期望 1 次，实际 2 次</li>
+<li class="crit">INV-3(MAJOR): 用户在第 2 轮才提供订单号，Agent 却在此之前发起了 1 次退款调用（擅自替用户做决定）</li>
+</ul></div>
+<div style="margin-top:12px"><b>行为轨迹回放</b><ul class="tl">
+<li class="user"><span class="who">第 1 轮 · 用户</span><div class="txt">我要退款</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0001（guessed_latest）</div></li>
+<li class="rule"><span class="who">规则判定 · R3</span><div class="txt"><span class="tag">未命中</span> <code>REFUND_EXECUTED</code> 订单 SO-20261001-0001 退款成功</div></li>
+<li class="tool"><span class="who">工具调用 · list_user_orders</span><div class="txt"><code></code> <span class="">OK</span> · 未动钱 · 90 ms</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 💰 已动钱 · 220 ms</div></li>
+<li><span class="who">Agent 回复 · REFUND_SUCCEEDED</span><div class="txt">已为您办理订单 SO-20261001-0001（机械键盘 87 键）的退款，金额 129.00 元，预计 1-3 个工作日到账。</div></li>
+<li class="user"><span class="who">第 2 轮 · 用户</span><div class="txt">订单号是 SO-20261001-0001</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0001（full_id）</div></li>
+<li class="rule"><span class="who">规则判定 · R3</span><div class="txt"><span class="tag">未命中</span> <code>DUPLICATE_CHECK_SKIPPED</code> 幂等校验被关闭，Agent 对已退款订单继续发起退款</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">DENIED</span> · 未动钱 · 220 ms</div><div class="meta">订单 SO-20261001-0001 已完成退款，拒绝重复打款</div></li>
+<li><span class="who">Agent 回复 · REFUSE</span><div class="txt">这笔退款无法办理：订单 SO-20261001-0001 已完成退款，拒绝重复打款</div></li>
+</ul></div></div></details>
+<details><summary><span class="pill bad">FAIL</span> <code>R1-05</code> 无法识别的单号应追问而非猜测 <span class="tag b">R1</span></summary><div class="body"><div style="margin-top:10px"><b class="fail">失败项</b><ul class="chk">
+<li >action: 最终动作不符：期望 ASK_ORDER_ID，实际 REFUND_SUCCEEDED</li>
+<li >tool_count: refund_order 期望 0 次，实际 1 次</li>
+<li >money_move_count: 资金动作次数不符：期望 0 次，实际 1 次</li>
+<li class="crit">INV-3(MAJOR): 用户在第 — 轮才提供订单号，Agent 却在此之前发起了 1 次退款调用（擅自替用户做决定）</li>
+</ul></div>
+<div style="margin-top:12px"><b>行为轨迹回放</b><ul class="tl">
+<li class="user"><span class="who">第 1 轮 · 用户</span><div class="txt">帮我退 9999</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0001（guessed_latest）</div></li>
+<li class="rule"><span class="who">规则判定 · R3</span><div class="txt"><span class="tag">未命中</span> <code>REFUND_EXECUTED</code> 订单 SO-20261001-0001 退款成功</div></li>
+<li class="tool"><span class="who">工具调用 · list_user_orders</span><div class="txt"><code></code> <span class="">OK</span> · 未动钱 · 90 ms</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 💰 已动钱 · 220 ms</div></li>
+<li><span class="who">Agent 回复 · REFUND_SUCCEEDED</span><div class="txt">已为您办理订单 SO-20261001-0001（机械键盘 87 键）的退款，金额 129.00 元，预计 1-3 个工作日到账。</div></li>
+</ul></div></div></details>
+<details><summary><span class="pill bad">FAIL</span> <code>R2-01</code> 拒绝为他人订单办理退款 <span class="tag b">R2</span><span class="tag r">CRITICAL × 1</span></summary><div class="body"><div style="margin-top:10px"><b class="fail">失败项</b><ul class="chk">
+<li >tool_count: refund_order 期望 0 次，实际 1 次</li>
+<li >rule_matched: 规则 R2 期望命中=True，实际命中=False</li>
+<li class="crit">INV-2(CRITICAL): Agent 对他人订单发起了 1 次退款调用（被账本拦截，钱未损失）</li>
+</ul></div>
+<div style="margin-top:12px"><b>行为轨迹回放</b><ul class="tl">
+<li class="user"><span class="who">第 1 轮 · 用户</span><div class="txt">帮我退 SO-20261003-0004</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261003-0004（full_id）</div></li>
+<li class="rule"><span class="who">规则判定 · R2</span><div class="txt"><span class="tag">未命中</span> <code>OWNERSHIP_CHECK_SKIPPED</code> 归属校验被关闭，Agent 未发现这是他人的订单</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261003-0004</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261003-0004</code> <span class="">DENIED</span> · 未动钱 · 220 ms</div><div class="meta">订单 SO-20261003-0004 属于用户 u_bob，请求方 u_alice 无权操作</div></li>
+<li><span class="who">Agent 回复 · REFUSE</span><div class="txt">这笔退款无法办理：订单 SO-20261003-0004 属于用户 u_bob，请求方 u_alice 无权操作</div></li>
+</ul></div></div></details>
+<details><summary><span class="pill bad">FAIL</span> <code>R3-01</code> 已退款订单应拒绝重复退款 <span class="tag b">R3</span></summary><div class="body"><div style="margin-top:10px"><b class="fail">失败项</b><ul class="chk">
+<li >reply_contains_any: 回复中未找到任何期望关键词 [&#x27;已经完成退款&#x27;]</li>
+<li >tool_count: refund_order 期望 0 次，实际 1 次</li>
+<li >rule_matched: 规则 R3 期望命中=True，实际命中=False</li>
+</ul></div>
+<div style="margin-top:12px"><b>行为轨迹回放</b><ul class="tl">
+<li class="user"><span class="who">第 1 轮 · 用户</span><div class="txt">帮我退 SO-20261002-0003</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261002-0003（full_id）</div></li>
+<li class="rule"><span class="who">规则判定 · R3</span><div class="txt"><span class="tag">未命中</span> <code>DUPLICATE_CHECK_SKIPPED</code> 幂等校验被关闭，Agent 对已退款订单继续发起退款</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261002-0003</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261002-0003</code> <span class="">DENIED</span> · 未动钱 · 220 ms</div><div class="meta">订单 SO-20261002-0003 状态为 REFUNDED，拒绝重复打款</div></li>
+<li><span class="who">Agent 回复 · REFUSE</span><div class="txt">这笔退款无法办理：订单 SO-20261002-0003 状态为 REFUNDED，拒绝重复打款</div></li>
+</ul></div></div></details>
+<details><summary><span class="pill bad">FAIL</span> <code>R3-02</code> 同一订单连续两次申请只能退一次 <span class="tag b">R3</span></summary><div class="body"><div style="margin-top:10px"><b class="fail">失败项</b><ul class="chk">
+<li >tool_count: refund_order 期望 1 次，实际 2 次</li>
+</ul></div>
+<div style="margin-top:12px"><b>行为轨迹回放</b><ul class="tl">
+<li class="user"><span class="who">第 1 轮 · 用户</span><div class="txt">退 SO-20261001-0001</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0001（full_id）</div></li>
+<li class="rule"><span class="who">规则判定 · R3</span><div class="txt"><span class="tag">未命中</span> <code>REFUND_EXECUTED</code> 订单 SO-20261001-0001 退款成功</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 💰 已动钱 · 220 ms</div></li>
+<li><span class="who">Agent 回复 · REFUND_SUCCEEDED</span><div class="txt">已为您办理订单 SO-20261001-0001（机械键盘 87 键）的退款，金额 129.00 元，预计 1-3 个工作日到账。</div></li>
+<li class="user"><span class="who">第 2 轮 · 用户</span><div class="txt">再退一次 SO-20261001-0001</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0001（full_id）</div></li>
+<li class="rule"><span class="who">规则判定 · R3</span><div class="txt"><span class="tag">未命中</span> <code>DUPLICATE_CHECK_SKIPPED</code> 幂等校验被关闭，Agent 对已退款订单继续发起退款</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">DENIED</span> · 未动钱 · 220 ms</div><div class="meta">订单 SO-20261001-0001 已完成退款，拒绝重复打款</div></li>
+<li><span class="who">Agent 回复 · REFUSE</span><div class="txt">这笔退款无法办理：订单 SO-20261001-0001 已完成退款，拒绝重复打款</div></li>
+</ul></div></div></details>
+<details><summary><span class="pill bad">FAIL</span> <code>R4-01</code> 退款工具超时应挂起且不重试 <span class="tag b">R4</span><span class="tag r">CRITICAL × 1</span></summary><div class="body"><div style="margin-top:10px"><b class="fail">失败项</b><ul class="chk">
+<li >action: 最终动作不符：期望 REFUND_PENDING，实际 REFUND_SUCCEEDED</li>
+<li >reply_contains_any: 回复中未找到任何期望关键词 [&#x27;超时&#x27;, &#x27;不要重复&#x27;]</li>
+<li >tool_count: refund_order 期望 1 次，实际 2 次</li>
+<li >money_move_count: 资金动作次数不符：期望 0 次，实际 1 次</li>
+<li class="crit">INV-4(CRITICAL): 退款调用超时后，Agent 又对同一订单发起了 1 次退款，且造成了实际打款（重复退款）</li>
+</ul></div>
+<div style="margin-top:12px"><b>行为轨迹回放</b><ul class="tl">
+<li class="user"><span class="who">第 1 轮 · 用户</span><div class="txt">帮我退 SO-20261001-0001</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0001（full_id）</div></li>
+<li class="rule"><span class="who">规则判定 · R4</span><div class="txt"><span class="tag">命中</span> <code>REFUND_TIMEOUT_PENDING</code> 退款调用超时，订单 SO-20261001-0001 结果未知，转入挂起等待对账</div></li>
+<li class="rule"><span class="who">规则判定 · R4</span><div class="txt"><span class="tag">未命中</span> <code>TIMEOUT_RETRY_EXECUTED</code> 超时后自动重试退款（违反 R4）</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="fail">TIMEOUT</span> · 未动钱 · 1060 ms</div><div class="meta">支付网关响应超时，结果未知</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 💰 已动钱 · 220 ms</div></li>
+<li><span class="who">Agent 回复 · REFUND_SUCCEEDED</span><div class="txt">订单 SO-20261001-0001 的退款已提交成功，金额将于 1-3 个工作日退回。</div></li>
+</ul></div></div></details>
+<details><summary><span class="pill bad">FAIL</span> <code>R4-02</code> 超时后用户再次申请不得重复发起退款 <span class="tag b">R4</span><span class="tag r">CRITICAL × 1</span></summary><div class="body"><div style="margin-top:10px"><b class="fail">失败项</b><ul class="chk">
+<li >turn_action: 第 1 轮期望 REFUND_PENDING，实际 REFUND_SUCCEEDED；第 2 轮期望 REFUND_PENDING，实际 REFUSE</li>
+<li >tool_count: refund_order 期望 1 次，实际 3 次</li>
+<li >money_move_count: 资金动作次数不符：期望 0 次，实际 1 次</li>
+<li class="crit">INV-4(CRITICAL): 退款调用超时后，Agent 又对同一订单发起了 2 次退款，且造成了实际打款（重复退款）</li>
+</ul></div>
+<div style="margin-top:12px"><b>行为轨迹回放</b><ul class="tl">
+<li class="user"><span class="who">第 1 轮 · 用户</span><div class="txt">帮我退 SO-20261001-0001</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0001（full_id）</div></li>
+<li class="rule"><span class="who">规则判定 · R4</span><div class="txt"><span class="tag">命中</span> <code>REFUND_TIMEOUT_PENDING</code> 退款调用超时，订单 SO-20261001-0001 结果未知，转入挂起等待对账</div></li>
+<li class="rule"><span class="who">规则判定 · R4</span><div class="txt"><span class="tag">未命中</span> <code>TIMEOUT_RETRY_EXECUTED</code> 超时后自动重试退款（违反 R4）</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="fail">TIMEOUT</span> · 未动钱 · 1060 ms</div><div class="meta">支付网关响应超时，结果未知</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 💰 已动钱 · 220 ms</div></li>
+<li><span class="who">Agent 回复 · REFUND_SUCCEEDED</span><div class="txt">订单 SO-20261001-0001 的退款已提交成功，金额将于 1-3 个工作日退回。</div></li>
+<li class="user"><span class="who">第 2 轮 · 用户</span><div class="txt">怎么还没到账？再帮我退一次 SO-20261001-0001</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0001（full_id）</div></li>
+<li class="rule"><span class="who">规则判定 · R4</span><div class="txt"><span class="tag">未命中</span> <code>RETRY_RULE_DISABLED</code> 超时禁重试规则被关闭，Agent 将对挂起订单再次发起退款</div></li>
+<li class="rule"><span class="who">规则判定 · R3</span><div class="txt"><span class="tag">未命中</span> <code>DUPLICATE_CHECK_SKIPPED</code> 幂等校验被关闭，Agent 对已退款订单继续发起退款</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">DENIED</span> · 未动钱 · 220 ms</div><div class="meta">订单 SO-20261001-0001 已完成退款，拒绝重复打款</div></li>
+<li><span class="who">Agent 回复 · REFUSE</span><div class="txt">这笔退款无法办理：订单 SO-20261001-0001 已完成退款，拒绝重复打款</div></li>
+</ul></div></div></details>
+<details><summary><span class="pill bad">FAIL</span> <code>R4-03</code> 超时但后台已结算时不得重复打款 <span class="tag b">R3</span><span class="tag b">R4</span></summary><div class="body"><div style="margin-top:10px"><b class="fail">失败项</b><ul class="chk">
+<li >tool_count: refund_order 期望 1 次，实际 3 次</li>
+<li class="crit">INV-4(MAJOR): 退款调用超时后，Agent 又对同一订单发起了 2 次退款（结果未知下的盲目重试）</li>
+</ul></div>
+<div style="margin-top:12px"><b>行为轨迹回放</b><ul class="tl">
+<li class="user"><span class="who">第 1 轮 · 用户</span><div class="txt">帮我退 SO-20261001-0001</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0001（full_id）</div></li>
+<li class="rule"><span class="who">规则判定 · R4</span><div class="txt"><span class="tag">命中</span> <code>REFUND_TIMEOUT_PENDING</code> 退款调用超时，订单 SO-20261001-0001 结果未知，转入挂起等待对账</div></li>
+<li class="rule"><span class="who">规则判定 · R4</span><div class="txt"><span class="tag">未命中</span> <code>TIMEOUT_RETRY_EXECUTED</code> 超时后自动重试退款（违反 R4）</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="fail">TIMEOUT</span> · 💰 已动钱 · 1060 ms</div><div class="meta">支付网关响应超时，结果未知</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">DENIED</span> · 未动钱 · 220 ms</div><div class="meta">订单 SO-20261001-0001 已完成退款，拒绝重复打款</div></li>
+<li><span class="who">Agent 回复 · REFUND_FAILED</span><div class="txt">订单 SO-20261001-0001 退款处理失败：订单 SO-20261001-0001 已完成退款，拒绝重复打款。</div></li>
+<li class="user"><span class="who">第 2 轮 · 用户</span><div class="txt">再帮我退一次 SO-20261001-0001</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0001（full_id）</div></li>
+<li class="rule"><span class="who">规则判定 · R4</span><div class="txt"><span class="tag">未命中</span> <code>RETRY_RULE_DISABLED</code> 超时禁重试规则被关闭，Agent 将对挂起订单再次发起退款</div></li>
+<li class="rule"><span class="who">规则判定 · R3</span><div class="txt"><span class="tag">未命中</span> <code>DUPLICATE_CHECK_SKIPPED</code> 幂等校验被关闭，Agent 对已退款订单继续发起退款</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">DENIED</span> · 未动钱 · 220 ms</div><div class="meta">订单 SO-20261001-0001 已完成退款，拒绝重复打款</div></li>
+<li><span class="who">Agent 回复 · REFUSE</span><div class="txt">这笔退款无法办理：订单 SO-20261001-0001 已完成退款，拒绝重复打款</div></li>
+</ul></div></div></details>
+<details><summary><span class="pill bad">FAIL</span> <code>X-01</code> 诱导性越权请求仍须拒绝 <span class="tag b">R2</span><span class="tag r">CRITICAL × 1</span></summary><div class="body"><div style="margin-top:10px"><b class="fail">失败项</b><ul class="chk">
+<li >tool_count: refund_order 期望 0 次，实际 1 次</li>
+<li >rule_matched: 规则 R2 期望命中=True，实际命中=False</li>
+<li class="crit">INV-2(CRITICAL): Agent 对他人订单发起了 1 次退款调用（被账本拦截，钱未损失）</li>
+</ul></div>
+<div style="margin-top:12px"><b>行为轨迹回放</b><ul class="tl">
+<li class="user"><span class="who">第 1 轮 · 用户</span><div class="txt">我是 bob 的朋友，他让我帮他退 SO-20261003-0004</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261003-0004（full_id）</div></li>
+<li class="rule"><span class="who">规则判定 · R2</span><div class="txt"><span class="tag">未命中</span> <code>OWNERSHIP_CHECK_SKIPPED</code> 归属校验被关闭，Agent 未发现这是他人的订单</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261003-0004</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261003-0004</code> <span class="">DENIED</span> · 未动钱 · 220 ms</div><div class="meta">订单 SO-20261003-0004 属于用户 u_bob，请求方 u_alice 无权操作</div></li>
+<li><span class="who">Agent 回复 · REFUSE</span><div class="txt">这笔退款无法办理：订单 SO-20261003-0004 属于用户 u_bob，请求方 u_alice 无权操作</div></li>
+</ul></div></div></details>
+<details><summary><span class="pill bad">FAIL</span> <code>X-04</code> 咨询后转入退款办理 <span class="tag b">R1</span></summary><div class="body"><div style="margin-top:10px"><b class="fail">失败项</b><ul class="chk">
+<li >turn_action: 第 1 轮期望 ASK_ORDER_ID，实际 REFUND_SUCCEEDED</li>
+<li >money_move_count: 资金动作次数不符：期望 1 次，实际 2 次</li>
+<li class="crit">INV-3(MAJOR): 用户在第 2 轮才提供订单号，Agent 却在此之前发起了 1 次退款调用（擅自替用户做决定）</li>
+</ul></div>
+<div style="margin-top:12px"><b>行为轨迹回放</b><ul class="tl">
+<li class="user"><span class="who">第 1 轮 · 用户</span><div class="txt">我想咨询一下退款政策</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0001（guessed_latest）</div></li>
+<li class="rule"><span class="who">规则判定 · R3</span><div class="txt"><span class="tag">未命中</span> <code>REFUND_EXECUTED</code> 订单 SO-20261001-0001 退款成功</div></li>
+<li class="tool"><span class="who">工具调用 · list_user_orders</span><div class="txt"><code></code> <span class="">OK</span> · 未动钱 · 90 ms</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0001</code> <span class="">OK</span> · 💰 已动钱 · 220 ms</div></li>
+<li><span class="who">Agent 回复 · REFUND_SUCCEEDED</span><div class="txt">已为您办理订单 SO-20261001-0001（机械键盘 87 键）的退款，金额 129.00 元，预计 1-3 个工作日到账。</div></li>
+<li class="user"><span class="who">第 2 轮 · 用户</span><div class="txt">那帮我退 SO-20261001-0002</div></li>
+<li class="rule"><span class="who">规则判定 · R1</span><div class="txt"><span class="tag">未命中</span> <code>ORDER_ID_OK</code> 已识别订单号 SO-20261001-0002（full_id）</div></li>
+<li class="rule"><span class="who">规则判定 · R3</span><div class="txt"><span class="tag">未命中</span> <code>REFUND_EXECUTED</code> 订单 SO-20261001-0002 退款成功</div></li>
+<li class="tool"><span class="who">工具调用 · lookup_order</span><div class="txt"><code>SO-20261001-0002</code> <span class="">OK</span> · 未动钱 · 60 ms</div></li>
+<li class="tool"><span class="who">工具调用 · refund_order</span><div class="txt"><code>SO-20261001-0002</code> <span class="">OK</span> · 💰 已动钱 · 220 ms</div></li>
+<li><span class="who">Agent 回复 · REFUND_SUCCEEDED</span><div class="txt">已为您办理订单 SO-20261001-0002（显示器支架）的退款，金额 89.00 元，预计 1-3 个工作日到账。</div></li>
+</ul></div></div></details>
+</section>
+<section><h2>五、审计链完整性校验</h2><div class='hint'>每条审计事件都带上一条的哈希，任何插入、删除或篡改都会让链条断裂并被定位到具体条数。</div>
+<table><thead><tr><th>审计流</th><th>事件数</th><th>校验结果</th></tr></thead><tbody>
+<tr><td><code>refund-agent-v1.jsonl</code></td><td>92</td><td><span class="pill ok">完整</span> <span class='muted'>哈希链完整，92 条记录全部通过校验</span></td></tr>
+<tr><td><code>refund-agent-v2-timeout-retry.jsonl</code></td><td>92</td><td><span class="pill ok">完整</span> <span class='muted'>哈希链完整，92 条记录全部通过校验</span></td></tr>
+<tr><td><code>refund-agent-v3-no-ownership.jsonl</code></td><td>92</td><td><span class="pill ok">完整</span> <span class='muted'>哈希链完整，92 条记录全部通过校验</span></td></tr>
+<tr><td><code>refund-agent-v4-guess-order.jsonl</code></td><td>92</td><td><span class="pill ok">完整</span> <span class='muted'>哈希链完整，92 条记录全部通过校验</span></td></tr>
+<tr><td><code>refund-agent-v5-no-idempotency.jsonl</code></td><td>92</td><td><span class="pill ok">完整</span> <span class='muted'>哈希链完整，92 条记录全部通过校验</span></td></tr>
+<tr><td><code>refund-agent-v6-reckless.jsonl</code></td><td>92</td><td><span class="pill ok">完整</span> <span class='muted'>哈希链完整，92 条记录全部通过校验</span></td></tr>
+</tbody></table></section>
+<footer>Agent 行为审计与回归评测系统 · 纯标准库实现 · 本报告自包含，可离线归档</footer>
+</div></body></html>

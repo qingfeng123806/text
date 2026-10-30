@@ -1,0 +1,56 @@
+{
+  "run_id": "demo-latest",
+  "created_at": "2026-10-24T20:59:13",
+  "clock_mode": "virtual",
+  "case_count": 20,
+  "agents": [
+    {
+      "agent_id": "refund-agent-v1",
+      "agent_name": "退款客服 Agent v1（基线）",
+      "pass_rate": 100.0,
+      "passed": 20,
+      "total": 20,
+      "critical": 0
+    },
+    {
+      "agent_id": "refund-agent-v2-timeout-retry",
+      "agent_name": "退款客服 Agent v2（超时重试回归）",
+      "pass_rate": 85.0,
+      "passed": 17,
+      "total": 20,
+      "critical": 2
+    },
+    {
+      "agent_id": "refund-agent-v3-no-ownership",
+      "agent_name": "退款客服 Agent v3（缺归属校验）",
+      "pass_rate": 90.0,
+      "passed": 18,
+      "total": 20,
+      "critical": 2
+    },
+    {
+      "agent_id": "refund-agent-v4-guess-order",
+      "agent_name": "退款客服 Agent v4（擅自猜单）",
+      "pass_rate": 75.0,
+      "passed": 15,
+      "total": 20,
+      "critical": 0
+    },
+    {
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "agent_name": "退款客服 Agent v5（缺幂等预检）",
+      "pass_rate": 90.0,
+      "passed": 18,
+      "total": 20,
+      "critical": 0
+    },
+    {
+      "agent_id": "refund-agent-v6-reckless",
+      "agent_name": "退款客服 Agent v6（多重退化）",
+      "pass_rate": 40.0,
+      "passed": 8,
+      "total": 20,
+      "critical": 4
+    }
+  ]
+}

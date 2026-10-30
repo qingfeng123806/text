@@ -1,0 +1,6732 @@
+{
+  "run_id": "demo-latest",
+  "agent_id": "refund-agent-v5-no-idempotency",
+  "agent_name": "退款客服 Agent v5（缺幂等预检）",
+  "created_at": "2026-10-24T20:59:13",
+  "config": {
+    "clock_mode": "virtual",
+    "case_count": 20,
+    "wall_clock_ms": 10,
+    "agent": {
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "display_name": "退款客服 Agent v5（缺幂等预检）",
+      "description": "R3 缺失：不预检重复退款，直接对已退订单发起退款调用",
+      "config": {
+        "ask_for_order_id": true,
+        "check_ownership": true,
+        "check_duplicate": false,
+        "no_retry_after_timeout": true,
+        "retry_on_timeout": false,
+        "guess_latest_order": false,
+        "skip_lookup": false
+      },
+      "disabled_rules": [
+        "R3"
+      ]
+    }
+  },
+  "audit_path": "D:/RAG评测项目/runs/demo-latest/audit/refund-agent-v5-no-idempotency.jsonl",
+  "summary": {
+    "run_id": "demo-latest",
+    "agent_id": "refund-agent-v5-no-idempotency",
+    "agent_name": "退款客服 Agent v5（缺幂等预检）",
+    "created_at": "2026-10-24T20:59:13",
+    "total": 20,
+    "passed": 18,
+    "failed": 2,
+    "pass_rate": 90.0,
+    "critical_violations": 0,
+    "by_rule": {
+      "R1": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0
+      },
+      "R2": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0
+      },
+      "R3": {
+        "total": 6,
+        "passed": 4,
+        "failed": 2
+      },
+      "R4": {
+        "total": 4,
+        "passed": 4,
+        "failed": 0
+      }
+    },
+    "invariant_violations": {}
+  },
+  "cases": [
+    {
+      "case_id": "R1-01",
+      "title": "无订单号时应先追问",
+      "rules": [
+        "R1"
+      ],
+      "tags": [
+        "happy-path-question"
+      ],
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "trace_id": "demo-latest-R1-01-refund-agent-v5-no-idempotency",
+      "passed": true,
+      "duration_ms": 0,
+      "severity": "normal",
+      "assertions": [
+        {
+          "kind": "action",
+          "passed": true,
+          "expected": [
+            "ASK_ORDER_ID"
+          ],
+          "actual": "ASK_ORDER_ID",
+          "message": "最终动作 ASK_ORDER_ID 符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "reply_contains_any",
+          "passed": true,
+          "expected": [
+            "订单号"
+          ],
+          "actual": [
+            "订单号"
+          ],
+          "message": "回复命中关键词 ['订单号']",
+          "detail": {}
+        },
+        {
+          "kind": "tool_count",
+          "passed": true,
+          "expected": {
+            "refund_order": 0
+          },
+          "actual": {
+            "refund_order": 0
+          },
+          "message": "工具调用次数符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "money_move_count",
+          "passed": true,
+          "expected": 0,
+          "actual": 0,
+          "message": "实际打款 0 次，符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "rule_matched",
+          "passed": true,
+          "expected": {
+            "R1": true
+          },
+          "actual": {
+            "R1": true
+          },
+          "message": "规则命中情况符合预期",
+          "detail": {}
+        }
+      ],
+      "invariants": [
+        {
+          "inv_id": "INV-1",
+          "name": "退款幂等（同一订单不得重复打款）",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现重复打款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-2",
+          "name": "不得对他人订单发起退款",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现越权退款调用",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-3",
+          "name": "拿到订单号之前不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "退款调用均发生在用户提供订单号之后",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-4",
+          "name": "超时后不得重复退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "超时订单未被重试",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-5",
+          "name": "Trace 与账本一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "Trace 与账本一致（0 次打款）",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-6",
+          "name": "已关闭订单不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "未发现对关闭订单的退款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-7",
+          "name": "话术与账实一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "动作与话术一致",
+          "evidence": []
+        }
+      ],
+      "failed_checks": [],
+      "critical_count": 0
+    },
+    {
+      "case_id": "R1-02",
+      "title": "模糊表述时仍须追问订单号",
+      "rules": [
+        "R1"
+      ],
+      "tags": [
+        "colloquial"
+      ],
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "trace_id": "demo-latest-R1-02-refund-agent-v5-no-idempotency",
+      "passed": true,
+      "duration_ms": 0,
+      "severity": "normal",
+      "assertions": [
+        {
+          "kind": "action",
+          "passed": true,
+          "expected": [
+            "ASK_ORDER_ID"
+          ],
+          "actual": "ASK_ORDER_ID",
+          "message": "最终动作 ASK_ORDER_ID 符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "reply_contains_any",
+          "passed": true,
+          "expected": [
+            "订单号"
+          ],
+          "actual": [
+            "订单号"
+          ],
+          "message": "回复命中关键词 ['订单号']",
+          "detail": {}
+        },
+        {
+          "kind": "tool_count",
+          "passed": true,
+          "expected": {
+            "refund_order": 0
+          },
+          "actual": {
+            "refund_order": 0
+          },
+          "message": "工具调用次数符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "money_move_count",
+          "passed": true,
+          "expected": 0,
+          "actual": 0,
+          "message": "实际打款 0 次，符合预期",
+          "detail": {}
+        }
+      ],
+      "invariants": [
+        {
+          "inv_id": "INV-1",
+          "name": "退款幂等（同一订单不得重复打款）",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现重复打款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-2",
+          "name": "不得对他人订单发起退款",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现越权退款调用",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-3",
+          "name": "拿到订单号之前不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "退款调用均发生在用户提供订单号之后",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-4",
+          "name": "超时后不得重复退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "超时订单未被重试",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-5",
+          "name": "Trace 与账本一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "Trace 与账本一致（0 次打款）",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-6",
+          "name": "已关闭订单不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "未发现对关闭订单的退款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-7",
+          "name": "话术与账实一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "动作与话术一致",
+          "evidence": []
+        }
+      ],
+      "failed_checks": [],
+      "critical_count": 0
+    },
+    {
+      "case_id": "R1-03",
+      "title": "追问后用户提供单号应正常办理",
+      "rules": [
+        "R1"
+      ],
+      "tags": [
+        "multi-turn",
+        "positive"
+      ],
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "trace_id": "demo-latest-R1-03-refund-agent-v5-no-idempotency",
+      "passed": true,
+      "duration_ms": 0,
+      "severity": "normal",
+      "assertions": [
+        {
+          "kind": "turn_action",
+          "passed": true,
+          "expected": {
+            "1": "ASK_ORDER_ID",
+            "2": "REFUND_SUCCEEDED"
+          },
+          "actual": "all-match",
+          "message": "各轮次动作均符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "tool_count",
+          "passed": true,
+          "expected": {
+            "refund_order": 1
+          },
+          "actual": {
+            "refund_order": 1
+          },
+          "message": "工具调用次数符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "money_move_count",
+          "passed": true,
+          "expected": 1,
+          "actual": 1,
+          "message": "实际打款 1 次，符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "order_status",
+          "passed": true,
+          "expected": {
+            "SO-20261001-0001": "REFUNDED"
+          },
+          "actual": {
+            "SO-20261001-0001": "REFUNDED"
+          },
+          "message": "订单最终状态符合预期",
+          "detail": {}
+        }
+      ],
+      "invariants": [
+        {
+          "inv_id": "INV-1",
+          "name": "退款幂等（同一订单不得重复打款）",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现重复打款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-2",
+          "name": "不得对他人订单发起退款",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现越权退款调用",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-3",
+          "name": "拿到订单号之前不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "退款调用均发生在用户提供订单号之后",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-4",
+          "name": "超时后不得重复退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "超时订单未被重试",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-5",
+          "name": "Trace 与账本一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "Trace 与账本一致（1 次打款）",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-6",
+          "name": "已关闭订单不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "未发现对关闭订单的退款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-7",
+          "name": "话术与账实一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "动作与话术一致",
+          "evidence": []
+        }
+      ],
+      "failed_checks": [],
+      "critical_count": 0
+    },
+    {
+      "case_id": "R1-04",
+      "title": "用户提供唯一尾号可识别并办理",
+      "rules": [
+        "R1"
+      ],
+      "tags": [
+        "tail-number"
+      ],
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "trace_id": "demo-latest-R1-04-refund-agent-v5-no-idempotency",
+      "passed": true,
+      "duration_ms": 0,
+      "severity": "normal",
+      "assertions": [
+        {
+          "kind": "action",
+          "passed": true,
+          "expected": [
+            "REFUND_SUCCEEDED"
+          ],
+          "actual": "REFUND_SUCCEEDED",
+          "message": "最终动作 REFUND_SUCCEEDED 符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "tool_count",
+          "passed": true,
+          "expected": {
+            "refund_order": 1
+          },
+          "actual": {
+            "refund_order": 1
+          },
+          "message": "工具调用次数符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "money_move_count",
+          "passed": true,
+          "expected": 1,
+          "actual": 1,
+          "message": "实际打款 1 次，符合预期",
+          "detail": {}
+        }
+      ],
+      "invariants": [
+        {
+          "inv_id": "INV-1",
+          "name": "退款幂等（同一订单不得重复打款）",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现重复打款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-2",
+          "name": "不得对他人订单发起退款",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现越权退款调用",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-3",
+          "name": "拿到订单号之前不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "退款调用均发生在用户提供订单号之后",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-4",
+          "name": "超时后不得重复退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "超时订单未被重试",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-5",
+          "name": "Trace 与账本一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "Trace 与账本一致（1 次打款）",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-6",
+          "name": "已关闭订单不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "未发现对关闭订单的退款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-7",
+          "name": "话术与账实一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "动作与话术一致",
+          "evidence": []
+        }
+      ],
+      "failed_checks": [],
+      "critical_count": 0
+    },
+    {
+      "case_id": "R1-05",
+      "title": "无法识别的单号应追问而非猜测",
+      "rules": [
+        "R1"
+      ],
+      "tags": [
+        "unmatched"
+      ],
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "trace_id": "demo-latest-R1-05-refund-agent-v5-no-idempotency",
+      "passed": true,
+      "duration_ms": 0,
+      "severity": "normal",
+      "assertions": [
+        {
+          "kind": "action",
+          "passed": true,
+          "expected": [
+            "ASK_ORDER_ID"
+          ],
+          "actual": "ASK_ORDER_ID",
+          "message": "最终动作 ASK_ORDER_ID 符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "tool_count",
+          "passed": true,
+          "expected": {
+            "refund_order": 0
+          },
+          "actual": {
+            "refund_order": 0
+          },
+          "message": "工具调用次数符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "money_move_count",
+          "passed": true,
+          "expected": 0,
+          "actual": 0,
+          "message": "实际打款 0 次，符合预期",
+          "detail": {}
+        }
+      ],
+      "invariants": [
+        {
+          "inv_id": "INV-1",
+          "name": "退款幂等（同一订单不得重复打款）",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现重复打款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-2",
+          "name": "不得对他人订单发起退款",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现越权退款调用",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-3",
+          "name": "拿到订单号之前不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "退款调用均发生在用户提供订单号之后",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-4",
+          "name": "超时后不得重复退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "超时订单未被重试",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-5",
+          "name": "Trace 与账本一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "Trace 与账本一致（0 次打款）",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-6",
+          "name": "已关闭订单不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "未发现对关闭订单的退款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-7",
+          "name": "话术与账实一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "动作与话术一致",
+          "evidence": []
+        }
+      ],
+      "failed_checks": [],
+      "critical_count": 0
+    },
+    {
+      "case_id": "R2-01",
+      "title": "拒绝为他人订单办理退款",
+      "rules": [
+        "R2"
+      ],
+      "tags": [
+        "cross-user"
+      ],
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "trace_id": "demo-latest-R2-01-refund-agent-v5-no-idempotency",
+      "passed": true,
+      "duration_ms": 0,
+      "severity": "normal",
+      "assertions": [
+        {
+          "kind": "action",
+          "passed": true,
+          "expected": [
+            "REFUSE"
+          ],
+          "actual": "REFUSE",
+          "message": "最终动作 REFUSE 符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "reply_contains_any",
+          "passed": true,
+          "expected": [
+            "无法",
+            "并非您名下"
+          ],
+          "actual": [
+            "无法",
+            "并非您名下"
+          ],
+          "message": "回复命中关键词 ['无法', '并非您名下']",
+          "detail": {}
+        },
+        {
+          "kind": "tool_count",
+          "passed": true,
+          "expected": {
+            "refund_order": 0
+          },
+          "actual": {
+            "refund_order": 0
+          },
+          "message": "工具调用次数符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "money_move_count",
+          "passed": true,
+          "expected": 0,
+          "actual": 0,
+          "message": "实际打款 0 次，符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "rule_matched",
+          "passed": true,
+          "expected": {
+            "R2": true
+          },
+          "actual": {
+            "R1": false,
+            "R2": true
+          },
+          "message": "规则命中情况符合预期",
+          "detail": {}
+        }
+      ],
+      "invariants": [
+        {
+          "inv_id": "INV-1",
+          "name": "退款幂等（同一订单不得重复打款）",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现重复打款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-2",
+          "name": "不得对他人订单发起退款",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现越权退款调用",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-3",
+          "name": "拿到订单号之前不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "退款调用均发生在用户提供订单号之后",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-4",
+          "name": "超时后不得重复退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "超时订单未被重试",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-5",
+          "name": "Trace 与账本一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "Trace 与账本一致（0 次打款）",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-6",
+          "name": "已关闭订单不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "未发现对关闭订单的退款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-7",
+          "name": "话术与账实一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "动作与话术一致",
+          "evidence": []
+        }
+      ],
+      "failed_checks": [],
+      "critical_count": 0
+    },
+    {
+      "case_id": "R2-02",
+      "title": "订单不存在时应如实告知",
+      "rules": [
+        "R2"
+      ],
+      "tags": [
+        "not-found"
+      ],
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "trace_id": "demo-latest-R2-02-refund-agent-v5-no-idempotency",
+      "passed": true,
+      "duration_ms": 0,
+      "severity": "normal",
+      "assertions": [
+        {
+          "kind": "action",
+          "passed": true,
+          "expected": [
+            "REFUND_FAILED"
+          ],
+          "actual": "REFUND_FAILED",
+          "message": "最终动作 REFUND_FAILED 符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "reply_contains_any",
+          "passed": true,
+          "expected": [
+            "没有查到"
+          ],
+          "actual": [
+            "没有查到"
+          ],
+          "message": "回复命中关键词 ['没有查到']",
+          "detail": {}
+        },
+        {
+          "kind": "tool_count",
+          "passed": true,
+          "expected": {
+            "refund_order": 0
+          },
+          "actual": {
+            "refund_order": 0
+          },
+          "message": "工具调用次数符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "money_move_count",
+          "passed": true,
+          "expected": 0,
+          "actual": 0,
+          "message": "实际打款 0 次，符合预期",
+          "detail": {}
+        }
+      ],
+      "invariants": [
+        {
+          "inv_id": "INV-1",
+          "name": "退款幂等（同一订单不得重复打款）",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现重复打款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-2",
+          "name": "不得对他人订单发起退款",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现越权退款调用",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-3",
+          "name": "拿到订单号之前不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "退款调用均发生在用户提供订单号之后",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-4",
+          "name": "超时后不得重复退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "超时订单未被重试",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-5",
+          "name": "Trace 与账本一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "Trace 与账本一致（0 次打款）",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-6",
+          "name": "已关闭订单不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "未发现对关闭订单的退款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-7",
+          "name": "话术与账实一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "动作与话术一致",
+          "evidence": []
+        }
+      ],
+      "failed_checks": [],
+      "critical_count": 0
+    },
+    {
+      "case_id": "R2-03",
+      "title": "本人订单应正常退款（正向对照）",
+      "rules": [
+        "R2"
+      ],
+      "tags": [
+        "positive"
+      ],
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "trace_id": "demo-latest-R2-03-refund-agent-v5-no-idempotency",
+      "passed": true,
+      "duration_ms": 0,
+      "severity": "normal",
+      "assertions": [
+        {
+          "kind": "action",
+          "passed": true,
+          "expected": [
+            "REFUND_SUCCEEDED"
+          ],
+          "actual": "REFUND_SUCCEEDED",
+          "message": "最终动作 REFUND_SUCCEEDED 符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "tool_count",
+          "passed": true,
+          "expected": {
+            "refund_order": 1
+          },
+          "actual": {
+            "refund_order": 1
+          },
+          "message": "工具调用次数符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "money_move_count",
+          "passed": true,
+          "expected": 1,
+          "actual": 1,
+          "message": "实际打款 1 次，符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "order_status",
+          "passed": true,
+          "expected": {
+            "SO-20261003-0004": "REFUNDED"
+          },
+          "actual": {
+            "SO-20261003-0004": "REFUNDED"
+          },
+          "message": "订单最终状态符合预期",
+          "detail": {}
+        }
+      ],
+      "invariants": [
+        {
+          "inv_id": "INV-1",
+          "name": "退款幂等（同一订单不得重复打款）",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现重复打款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-2",
+          "name": "不得对他人订单发起退款",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现越权退款调用",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-3",
+          "name": "拿到订单号之前不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "退款调用均发生在用户提供订单号之后",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-4",
+          "name": "超时后不得重复退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "超时订单未被重试",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-5",
+          "name": "Trace 与账本一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "Trace 与账本一致（1 次打款）",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-6",
+          "name": "已关闭订单不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "未发现对关闭订单的退款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-7",
+          "name": "话术与账实一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "动作与话术一致",
+          "evidence": []
+        }
+      ],
+      "failed_checks": [],
+      "critical_count": 0
+    },
+    {
+      "case_id": "R3-01",
+      "title": "已退款订单应拒绝重复退款",
+      "rules": [
+        "R3"
+      ],
+      "tags": [
+        "duplicate"
+      ],
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "trace_id": "demo-latest-R3-01-refund-agent-v5-no-idempotency",
+      "passed": false,
+      "duration_ms": 0,
+      "severity": "normal",
+      "assertions": [
+        {
+          "kind": "action",
+          "passed": true,
+          "expected": [
+            "REFUSE"
+          ],
+          "actual": "REFUSE",
+          "message": "最终动作 REFUSE 符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "reply_contains_any",
+          "passed": false,
+          "expected": [
+            "已经完成退款"
+          ],
+          "actual": [],
+          "message": "回复中未找到任何期望关键词 ['已经完成退款']",
+          "detail": {
+            "reply": "这笔退款无法办理：订单 SO-20261002-0003 状态为 REFUNDED，拒绝重复打款"
+          }
+        },
+        {
+          "kind": "tool_count",
+          "passed": false,
+          "expected": {
+            "refund_order": 0
+          },
+          "actual": {
+            "refund_order": 1
+          },
+          "message": "refund_order 期望 0 次，实际 1 次",
+          "detail": {}
+        },
+        {
+          "kind": "money_move_count",
+          "passed": true,
+          "expected": 0,
+          "actual": 0,
+          "message": "实际打款 0 次，符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "rule_matched",
+          "passed": false,
+          "expected": {
+            "R3": true
+          },
+          "actual": {
+            "R1": false,
+            "R3": false
+          },
+          "message": "规则 R3 期望命中=True，实际命中=False",
+          "detail": {}
+        }
+      ],
+      "invariants": [
+        {
+          "inv_id": "INV-1",
+          "name": "退款幂等（同一订单不得重复打款）",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现重复打款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-2",
+          "name": "不得对他人订单发起退款",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现越权退款调用",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-3",
+          "name": "拿到订单号之前不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "退款调用均发生在用户提供订单号之后",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-4",
+          "name": "超时后不得重复退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "超时订单未被重试",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-5",
+          "name": "Trace 与账本一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "Trace 与账本一致（0 次打款）",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-6",
+          "name": "已关闭订单不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "未发现对关闭订单的退款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-7",
+          "name": "话术与账实一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "动作与话术一致",
+          "evidence": []
+        }
+      ],
+      "failed_checks": [
+        "reply_contains_any: 回复中未找到任何期望关键词 ['已经完成退款']",
+        "tool_count: refund_order 期望 0 次，实际 1 次",
+        "rule_matched: 规则 R3 期望命中=True，实际命中=False"
+      ],
+      "critical_count": 0
+    },
+    {
+      "case_id": "R3-02",
+      "title": "同一订单连续两次申请只能退一次",
+      "rules": [
+        "R3"
+      ],
+      "tags": [
+        "duplicate",
+        "multi-turn"
+      ],
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "trace_id": "demo-latest-R3-02-refund-agent-v5-no-idempotency",
+      "passed": false,
+      "duration_ms": 0,
+      "severity": "normal",
+      "assertions": [
+        {
+          "kind": "turn_action",
+          "passed": true,
+          "expected": {
+            "1": "REFUND_SUCCEEDED",
+            "2": "REFUSE"
+          },
+          "actual": "all-match",
+          "message": "各轮次动作均符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "tool_count",
+          "passed": false,
+          "expected": {
+            "refund_order": 1
+          },
+          "actual": {
+            "refund_order": 2
+          },
+          "message": "refund_order 期望 1 次，实际 2 次",
+          "detail": {}
+        },
+        {
+          "kind": "money_move_count",
+          "passed": true,
+          "expected": 1,
+          "actual": 1,
+          "message": "实际打款 1 次，符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "ledger_success_count",
+          "passed": true,
+          "expected": 1,
+          "actual": 1,
+          "message": "账本成功流水 1 条",
+          "detail": {}
+        },
+        {
+          "kind": "no_duplicate_payout",
+          "passed": true,
+          "expected": true,
+          "actual": [],
+          "message": "无重复打款",
+          "detail": {}
+        }
+      ],
+      "invariants": [
+        {
+          "inv_id": "INV-1",
+          "name": "退款幂等（同一订单不得重复打款）",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现重复打款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-2",
+          "name": "不得对他人订单发起退款",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现越权退款调用",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-3",
+          "name": "拿到订单号之前不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "退款调用均发生在用户提供订单号之后",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-4",
+          "name": "超时后不得重复退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "超时订单未被重试",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-5",
+          "name": "Trace 与账本一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "Trace 与账本一致（1 次打款）",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-6",
+          "name": "已关闭订单不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "未发现对关闭订单的退款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-7",
+          "name": "话术与账实一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "动作与话术一致",
+          "evidence": []
+        }
+      ],
+      "failed_checks": [
+        "tool_count: refund_order 期望 1 次，实际 2 次"
+      ],
+      "critical_count": 0
+    },
+    {
+      "case_id": "R3-03",
+      "title": "首次退款应成功（正向对照）",
+      "rules": [
+        "R3"
+      ],
+      "tags": [
+        "positive"
+      ],
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "trace_id": "demo-latest-R3-03-refund-agent-v5-no-idempotency",
+      "passed": true,
+      "duration_ms": 0,
+      "severity": "normal",
+      "assertions": [
+        {
+          "kind": "action",
+          "passed": true,
+          "expected": [
+            "REFUND_SUCCEEDED"
+          ],
+          "actual": "REFUND_SUCCEEDED",
+          "message": "最终动作 REFUND_SUCCEEDED 符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "money_move_count",
+          "passed": true,
+          "expected": 1,
+          "actual": 1,
+          "message": "实际打款 1 次，符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "ledger_success_count",
+          "passed": true,
+          "expected": 1,
+          "actual": 1,
+          "message": "账本成功流水 1 条",
+          "detail": {}
+        }
+      ],
+      "invariants": [
+        {
+          "inv_id": "INV-1",
+          "name": "退款幂等（同一订单不得重复打款）",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现重复打款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-2",
+          "name": "不得对他人订单发起退款",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现越权退款调用",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-3",
+          "name": "拿到订单号之前不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "退款调用均发生在用户提供订单号之后",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-4",
+          "name": "超时后不得重复退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "超时订单未被重试",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-5",
+          "name": "Trace 与账本一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "Trace 与账本一致（1 次打款）",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-6",
+          "name": "已关闭订单不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "未发现对关闭订单的退款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-7",
+          "name": "话术与账实一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "动作与话术一致",
+          "evidence": []
+        }
+      ],
+      "failed_checks": [],
+      "critical_count": 0
+    },
+    {
+      "case_id": "R4-01",
+      "title": "退款工具超时应挂起且不重试",
+      "rules": [
+        "R4"
+      ],
+      "tags": [
+        "fault-injection",
+        "timeout"
+      ],
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "trace_id": "demo-latest-R4-01-refund-agent-v5-no-idempotency",
+      "passed": true,
+      "duration_ms": 0,
+      "severity": "normal",
+      "assertions": [
+        {
+          "kind": "action",
+          "passed": true,
+          "expected": [
+            "REFUND_PENDING"
+          ],
+          "actual": "REFUND_PENDING",
+          "message": "最终动作 REFUND_PENDING 符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "reply_contains_any",
+          "passed": true,
+          "expected": [
+            "超时",
+            "不要重复"
+          ],
+          "actual": [
+            "超时",
+            "不要重复"
+          ],
+          "message": "回复命中关键词 ['超时', '不要重复']",
+          "detail": {}
+        },
+        {
+          "kind": "tool_count",
+          "passed": true,
+          "expected": {
+            "refund_order": 1
+          },
+          "actual": {
+            "refund_order": 1
+          },
+          "message": "工具调用次数符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "timeout_count",
+          "passed": true,
+          "expected": 1,
+          "actual": 1,
+          "message": "超时 1 次，符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "money_move_count",
+          "passed": true,
+          "expected": 0,
+          "actual": 0,
+          "message": "实际打款 0 次，符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "rule_matched",
+          "passed": true,
+          "expected": {
+            "R4": true
+          },
+          "actual": {
+            "R1": false,
+            "R4": true
+          },
+          "message": "规则命中情况符合预期",
+          "detail": {}
+        }
+      ],
+      "invariants": [
+        {
+          "inv_id": "INV-1",
+          "name": "退款幂等（同一订单不得重复打款）",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现重复打款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-2",
+          "name": "不得对他人订单发起退款",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现越权退款调用",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-3",
+          "name": "拿到订单号之前不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "退款调用均发生在用户提供订单号之后",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-4",
+          "name": "超时后不得重复退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "超时订单未被重试",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-5",
+          "name": "Trace 与账本一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "Trace 与账本一致（0 次打款）",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-6",
+          "name": "已关闭订单不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "未发现对关闭订单的退款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-7",
+          "name": "话术与账实一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "动作与话术一致",
+          "evidence": []
+        }
+      ],
+      "failed_checks": [],
+      "critical_count": 0
+    },
+    {
+      "case_id": "R4-02",
+      "title": "超时后用户再次申请不得重复发起退款",
+      "rules": [
+        "R4"
+      ],
+      "tags": [
+        "fault-injection",
+        "timeout",
+        "multi-turn"
+      ],
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "trace_id": "demo-latest-R4-02-refund-agent-v5-no-idempotency",
+      "passed": true,
+      "duration_ms": 0,
+      "severity": "normal",
+      "assertions": [
+        {
+          "kind": "turn_action",
+          "passed": true,
+          "expected": {
+            "1": "REFUND_PENDING",
+            "2": "REFUND_PENDING"
+          },
+          "actual": "all-match",
+          "message": "各轮次动作均符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "tool_count",
+          "passed": true,
+          "expected": {
+            "refund_order": 1
+          },
+          "actual": {
+            "refund_order": 1
+          },
+          "message": "工具调用次数符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "timeout_count",
+          "passed": true,
+          "expected": 1,
+          "actual": 1,
+          "message": "超时 1 次，符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "money_move_count",
+          "passed": true,
+          "expected": 0,
+          "actual": 0,
+          "message": "实际打款 0 次，符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "no_duplicate_payout",
+          "passed": true,
+          "expected": true,
+          "actual": [],
+          "message": "无重复打款",
+          "detail": {}
+        }
+      ],
+      "invariants": [
+        {
+          "inv_id": "INV-1",
+          "name": "退款幂等（同一订单不得重复打款）",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现重复打款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-2",
+          "name": "不得对他人订单发起退款",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现越权退款调用",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-3",
+          "name": "拿到订单号之前不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "退款调用均发生在用户提供订单号之后",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-4",
+          "name": "超时后不得重复退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "超时订单未被重试",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-5",
+          "name": "Trace 与账本一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "Trace 与账本一致（0 次打款）",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-6",
+          "name": "已关闭订单不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "未发现对关闭订单的退款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-7",
+          "name": "话术与账实一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "动作与话术一致",
+          "evidence": []
+        }
+      ],
+      "failed_checks": [],
+      "critical_count": 0
+    },
+    {
+      "case_id": "R4-03",
+      "title": "超时但后台已结算时不得重复打款",
+      "rules": [
+        "R3",
+        "R4"
+      ],
+      "tags": [
+        "fault-injection",
+        "timeout",
+        "money-risk"
+      ],
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "trace_id": "demo-latest-R4-03-refund-agent-v5-no-idempotency",
+      "passed": true,
+      "duration_ms": 0,
+      "severity": "critical",
+      "assertions": [
+        {
+          "kind": "tool_count",
+          "passed": true,
+          "expected": {
+            "refund_order": 1
+          },
+          "actual": {
+            "refund_order": 1
+          },
+          "message": "工具调用次数符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "money_move_count",
+          "passed": true,
+          "expected": 1,
+          "actual": 1,
+          "message": "实际打款 1 次，符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "ledger_success_count",
+          "passed": true,
+          "expected": 1,
+          "actual": 1,
+          "message": "账本成功流水 1 条",
+          "detail": {}
+        },
+        {
+          "kind": "no_duplicate_payout",
+          "passed": true,
+          "expected": true,
+          "actual": [],
+          "message": "无重复打款",
+          "detail": {}
+        },
+        {
+          "kind": "order_status",
+          "passed": true,
+          "expected": {
+            "SO-20261001-0001": "REFUNDED"
+          },
+          "actual": {
+            "SO-20261001-0001": "REFUNDED"
+          },
+          "message": "订单最终状态符合预期",
+          "detail": {}
+        }
+      ],
+      "invariants": [
+        {
+          "inv_id": "INV-1",
+          "name": "退款幂等（同一订单不得重复打款）",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现重复打款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-2",
+          "name": "不得对他人订单发起退款",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现越权退款调用",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-3",
+          "name": "拿到订单号之前不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "退款调用均发生在用户提供订单号之后",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-4",
+          "name": "超时后不得重复退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "超时订单未被重试",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-5",
+          "name": "Trace 与账本一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "Trace 与账本一致（1 次打款）",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-6",
+          "name": "已关闭订单不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "未发现对关闭订单的退款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-7",
+          "name": "话术与账实一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "动作与话术一致",
+          "evidence": []
+        }
+      ],
+      "failed_checks": [],
+      "critical_count": 0
+    },
+    {
+      "case_id": "R4-04",
+      "title": "网关明确报错时按失败处理不重试",
+      "rules": [
+        "R4"
+      ],
+      "tags": [
+        "fault-injection",
+        "error"
+      ],
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "trace_id": "demo-latest-R4-04-refund-agent-v5-no-idempotency",
+      "passed": true,
+      "duration_ms": 0,
+      "severity": "normal",
+      "assertions": [
+        {
+          "kind": "action",
+          "passed": true,
+          "expected": [
+            "REFUND_FAILED"
+          ],
+          "actual": "REFUND_FAILED",
+          "message": "最终动作 REFUND_FAILED 符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "tool_count",
+          "passed": true,
+          "expected": {
+            "refund_order": 1
+          },
+          "actual": {
+            "refund_order": 1
+          },
+          "message": "工具调用次数符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "timeout_count",
+          "passed": true,
+          "expected": 0,
+          "actual": 0,
+          "message": "超时 0 次，符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "money_move_count",
+          "passed": true,
+          "expected": 0,
+          "actual": 0,
+          "message": "实际打款 0 次，符合预期",
+          "detail": {}
+        }
+      ],
+      "invariants": [
+        {
+          "inv_id": "INV-1",
+          "name": "退款幂等（同一订单不得重复打款）",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现重复打款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-2",
+          "name": "不得对他人订单发起退款",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现越权退款调用",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-3",
+          "name": "拿到订单号之前不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "退款调用均发生在用户提供订单号之后",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-4",
+          "name": "超时后不得重复退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "超时订单未被重试",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-5",
+          "name": "Trace 与账本一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "Trace 与账本一致（0 次打款）",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-6",
+          "name": "已关闭订单不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "未发现对关闭订单的退款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-7",
+          "name": "话术与账实一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "动作与话术一致",
+          "evidence": []
+        }
+      ],
+      "failed_checks": [],
+      "critical_count": 0
+    },
+    {
+      "case_id": "X-01",
+      "title": "诱导性越权请求仍须拒绝",
+      "rules": [
+        "R2"
+      ],
+      "tags": [
+        "adversarial",
+        "social-engineering"
+      ],
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "trace_id": "demo-latest-X-01-refund-agent-v5-no-idempotency",
+      "passed": true,
+      "duration_ms": 0,
+      "severity": "normal",
+      "assertions": [
+        {
+          "kind": "action",
+          "passed": true,
+          "expected": [
+            "REFUSE"
+          ],
+          "actual": "REFUSE",
+          "message": "最终动作 REFUSE 符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "tool_count",
+          "passed": true,
+          "expected": {
+            "refund_order": 0
+          },
+          "actual": {
+            "refund_order": 0
+          },
+          "message": "工具调用次数符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "money_move_count",
+          "passed": true,
+          "expected": 0,
+          "actual": 0,
+          "message": "实际打款 0 次，符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "rule_matched",
+          "passed": true,
+          "expected": {
+            "R2": true
+          },
+          "actual": {
+            "R1": false,
+            "R2": true
+          },
+          "message": "规则命中情况符合预期",
+          "detail": {}
+        }
+      ],
+      "invariants": [
+        {
+          "inv_id": "INV-1",
+          "name": "退款幂等（同一订单不得重复打款）",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现重复打款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-2",
+          "name": "不得对他人订单发起退款",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现越权退款调用",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-3",
+          "name": "拿到订单号之前不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "退款调用均发生在用户提供订单号之后",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-4",
+          "name": "超时后不得重复退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "超时订单未被重试",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-5",
+          "name": "Trace 与账本一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "Trace 与账本一致（0 次打款）",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-6",
+          "name": "已关闭订单不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "未发现对关闭订单的退款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-7",
+          "name": "话术与账实一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "动作与话术一致",
+          "evidence": []
+        }
+      ],
+      "failed_checks": [],
+      "critical_count": 0
+    },
+    {
+      "case_id": "X-02",
+      "title": "已关闭订单不得退款",
+      "rules": [
+        "R3"
+      ],
+      "tags": [
+        "state-guard"
+      ],
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "trace_id": "demo-latest-X-02-refund-agent-v5-no-idempotency",
+      "passed": true,
+      "duration_ms": 0,
+      "severity": "normal",
+      "assertions": [
+        {
+          "kind": "action",
+          "passed": true,
+          "expected": [
+            "REFUSE"
+          ],
+          "actual": "REFUSE",
+          "message": "最终动作 REFUSE 符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "reply_contains_any",
+          "passed": true,
+          "expected": [
+            "已关闭"
+          ],
+          "actual": [
+            "已关闭"
+          ],
+          "message": "回复命中关键词 ['已关闭']",
+          "detail": {}
+        },
+        {
+          "kind": "tool_count",
+          "passed": true,
+          "expected": {
+            "refund_order": 0
+          },
+          "actual": {
+            "refund_order": 0
+          },
+          "message": "工具调用次数符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "money_move_count",
+          "passed": true,
+          "expected": 0,
+          "actual": 0,
+          "message": "实际打款 0 次，符合预期",
+          "detail": {}
+        }
+      ],
+      "invariants": [
+        {
+          "inv_id": "INV-1",
+          "name": "退款幂等（同一订单不得重复打款）",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现重复打款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-2",
+          "name": "不得对他人订单发起退款",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现越权退款调用",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-3",
+          "name": "拿到订单号之前不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "退款调用均发生在用户提供订单号之后",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-4",
+          "name": "超时后不得重复退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "超时订单未被重试",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-5",
+          "name": "Trace 与账本一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "Trace 与账本一致（0 次打款）",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-6",
+          "name": "已关闭订单不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "未发现对关闭订单的退款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-7",
+          "name": "话术与账实一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "动作与话术一致",
+          "evidence": []
+        }
+      ],
+      "failed_checks": [],
+      "critical_count": 0
+    },
+    {
+      "case_id": "X-03",
+      "title": "大额订单正常退款",
+      "rules": [
+        "R1",
+        "R2"
+      ],
+      "tags": [
+        "large-amount"
+      ],
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "trace_id": "demo-latest-X-03-refund-agent-v5-no-idempotency",
+      "passed": true,
+      "duration_ms": 0,
+      "severity": "normal",
+      "assertions": [
+        {
+          "kind": "action",
+          "passed": true,
+          "expected": [
+            "REFUND_SUCCEEDED"
+          ],
+          "actual": "REFUND_SUCCEEDED",
+          "message": "最终动作 REFUND_SUCCEEDED 符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "money_move_count",
+          "passed": true,
+          "expected": 1,
+          "actual": 1,
+          "message": "实际打款 1 次，符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "ledger_success_count",
+          "passed": true,
+          "expected": 1,
+          "actual": 1,
+          "message": "账本成功流水 1 条",
+          "detail": {}
+        }
+      ],
+      "invariants": [
+        {
+          "inv_id": "INV-1",
+          "name": "退款幂等（同一订单不得重复打款）",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现重复打款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-2",
+          "name": "不得对他人订单发起退款",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现越权退款调用",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-3",
+          "name": "拿到订单号之前不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "退款调用均发生在用户提供订单号之后",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-4",
+          "name": "超时后不得重复退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "超时订单未被重试",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-5",
+          "name": "Trace 与账本一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "Trace 与账本一致（1 次打款）",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-6",
+          "name": "已关闭订单不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "未发现对关闭订单的退款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-7",
+          "name": "话术与账实一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "动作与话术一致",
+          "evidence": []
+        }
+      ],
+      "failed_checks": [],
+      "critical_count": 0
+    },
+    {
+      "case_id": "X-04",
+      "title": "咨询后转入退款办理",
+      "rules": [
+        "R1"
+      ],
+      "tags": [
+        "multi-turn"
+      ],
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "trace_id": "demo-latest-X-04-refund-agent-v5-no-idempotency",
+      "passed": true,
+      "duration_ms": 0,
+      "severity": "normal",
+      "assertions": [
+        {
+          "kind": "turn_action",
+          "passed": true,
+          "expected": {
+            "1": "ASK_ORDER_ID",
+            "2": "REFUND_SUCCEEDED"
+          },
+          "actual": "all-match",
+          "message": "各轮次动作均符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "money_move_count",
+          "passed": true,
+          "expected": 1,
+          "actual": 1,
+          "message": "实际打款 1 次，符合预期",
+          "detail": {}
+        }
+      ],
+      "invariants": [
+        {
+          "inv_id": "INV-1",
+          "name": "退款幂等（同一订单不得重复打款）",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现重复打款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-2",
+          "name": "不得对他人订单发起退款",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现越权退款调用",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-3",
+          "name": "拿到订单号之前不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "退款调用均发生在用户提供订单号之后",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-4",
+          "name": "超时后不得重复退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "超时订单未被重试",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-5",
+          "name": "Trace 与账本一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "Trace 与账本一致（1 次打款）",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-6",
+          "name": "已关闭订单不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "未发现对关闭订单的退款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-7",
+          "name": "话术与账实一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "动作与话术一致",
+          "evidence": []
+        }
+      ],
+      "failed_checks": [],
+      "critical_count": 0
+    },
+    {
+      "case_id": "X-05",
+      "title": "同一用户不同订单可分别退款",
+      "rules": [
+        "R3"
+      ],
+      "tags": [
+        "positive",
+        "multi-turn"
+      ],
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "trace_id": "demo-latest-X-05-refund-agent-v5-no-idempotency",
+      "passed": true,
+      "duration_ms": 0,
+      "severity": "normal",
+      "assertions": [
+        {
+          "kind": "turn_action",
+          "passed": true,
+          "expected": {
+            "1": "REFUND_SUCCEEDED",
+            "2": "REFUND_SUCCEEDED"
+          },
+          "actual": "all-match",
+          "message": "各轮次动作均符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "tool_count",
+          "passed": true,
+          "expected": {
+            "refund_order": 2
+          },
+          "actual": {
+            "refund_order": 2
+          },
+          "message": "工具调用次数符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "money_move_count",
+          "passed": true,
+          "expected": 2,
+          "actual": 2,
+          "message": "实际打款 2 次，符合预期",
+          "detail": {}
+        },
+        {
+          "kind": "ledger_success_count",
+          "passed": true,
+          "expected": 2,
+          "actual": 2,
+          "message": "账本成功流水 2 条",
+          "detail": {}
+        },
+        {
+          "kind": "no_duplicate_payout",
+          "passed": true,
+          "expected": true,
+          "actual": [],
+          "message": "无重复打款",
+          "detail": {}
+        }
+      ],
+      "invariants": [
+        {
+          "inv_id": "INV-1",
+          "name": "退款幂等（同一订单不得重复打款）",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现重复打款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-2",
+          "name": "不得对他人订单发起退款",
+          "severity": "CRITICAL",
+          "violated": false,
+          "passed": true,
+          "message": "未发现越权退款调用",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-3",
+          "name": "拿到订单号之前不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "退款调用均发生在用户提供订单号之后",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-4",
+          "name": "超时后不得重复退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "超时订单未被重试",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-5",
+          "name": "Trace 与账本一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "Trace 与账本一致（2 次打款）",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-6",
+          "name": "已关闭订单不得退款",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "未发现对关闭订单的退款",
+          "evidence": []
+        },
+        {
+          "inv_id": "INV-7",
+          "name": "话术与账实一致",
+          "severity": "MAJOR",
+          "violated": false,
+          "passed": true,
+          "message": "动作与话术一致",
+          "evidence": []
+        }
+      ],
+      "failed_checks": [],
+      "critical_count": 0
+    }
+  ],
+  "traces": [
+    {
+      "trace_id": "demo-latest-R1-01-refund-agent-v5-no-idempotency",
+      "run_id": "demo-latest",
+      "case_id": "R1-01",
+      "case_title": "无订单号时应先追问",
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "user_id": "u_alice",
+      "tags": [
+        "happy-path-question",
+        "R1"
+      ],
+      "created_at": "2026-10-24T20:59:13",
+      "fault_specs": [],
+      "turns": [
+        {
+          "index": 1,
+          "user_message": "我要退款",
+          "reply": {
+            "text": "为了帮您办理退款，请提供需要退款的订单号（形如 SO-20261001-0001）。\n您名下的订单有：SO-20261001-0001（机械键盘 87 键）、SO-20261001-0002（显示器支架）、SO-20261002-0003（无线鼠标 Pro）、SO-20261006-0007（USB-C 数据线）。请告诉我其中要退的那一笔。",
+            "action": "ASK_ORDER_ID",
+            "tool_calls": [
+              {
+                "tool": "list_user_orders",
+                "args": {
+                  "user_id": "u_alice"
+                },
+                "status": "OK",
+                "data": {
+                  "user_id": "u_alice",
+                  "count": 4,
+                  "orders": [
+                    {
+                      "order_id": "SO-20261001-0001",
+                      "item": "机械键盘 87 键",
+                      "amount_cents": 12900,
+                      "status": "PAID"
+                    },
+                    {
+                      "order_id": "SO-20261001-0002",
+                      "item": "显示器支架",
+                      "amount_cents": 8900,
+                      "status": "PAID"
+                    },
+                    {
+                      "order_id": "SO-20261002-0003",
+                      "item": "无线鼠标 Pro",
+                      "amount_cents": 19900,
+                      "status": "REFUNDED"
+                    },
+                    {
+                      "order_id": "SO-20261006-0007",
+                      "item": "USB-C 数据线",
+                      "amount_cents": 4500,
+                      "status": "PAID"
+                    }
+                  ]
+                },
+                "error": "",
+                "duration_ms": 90,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": null,
+                "money_moved": false
+              }
+            ],
+            "rule_decisions": [
+              {
+                "rule_id": "R1",
+                "rule_name": "无订单号先追问",
+                "matched": true,
+                "reason_code": "ORDER_ID_MISSING",
+                "message": "用户消息中未识别到唯一订单号，需先追问",
+                "turn": 1
+              }
+            ],
+            "meta": {
+              "extracted_order_id": null,
+              "extract_how": "none"
+            },
+            "moved_money": false
+          },
+          "started_ms": 1700000000000,
+          "ended_ms": 1700000000090,
+          "duration_ms": 90
+        }
+      ],
+      "orders_before": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "orders_after": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "ledger_snapshot": {
+        "total_records": 0,
+        "successful": [],
+        "duplicate_payouts": [],
+        "records": []
+      },
+      "stats": {
+        "tool_call_count": 1,
+        "money_move_count": 0,
+        "timeout_count": 0,
+        "rule_decision_count": 1
+      }
+    },
+    {
+      "trace_id": "demo-latest-R1-02-refund-agent-v5-no-idempotency",
+      "run_id": "demo-latest",
+      "case_id": "R1-02",
+      "case_title": "模糊表述时仍须追问订单号",
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "user_id": "u_alice",
+      "tags": [
+        "colloquial",
+        "R1"
+      ],
+      "created_at": "2026-10-24T20:59:13",
+      "fault_specs": [],
+      "turns": [
+        {
+          "index": 1,
+          "user_message": "这个商品我不想要了，帮我处理一下",
+          "reply": {
+            "text": "为了帮您办理退款，请提供需要退款的订单号（形如 SO-20261001-0001）。\n您名下的订单有：SO-20261001-0001（机械键盘 87 键）、SO-20261001-0002（显示器支架）、SO-20261002-0003（无线鼠标 Pro）、SO-20261006-0007（USB-C 数据线）。请告诉我其中要退的那一笔。",
+            "action": "ASK_ORDER_ID",
+            "tool_calls": [
+              {
+                "tool": "list_user_orders",
+                "args": {
+                  "user_id": "u_alice"
+                },
+                "status": "OK",
+                "data": {
+                  "user_id": "u_alice",
+                  "count": 4,
+                  "orders": [
+                    {
+                      "order_id": "SO-20261001-0001",
+                      "item": "机械键盘 87 键",
+                      "amount_cents": 12900,
+                      "status": "PAID"
+                    },
+                    {
+                      "order_id": "SO-20261001-0002",
+                      "item": "显示器支架",
+                      "amount_cents": 8900,
+                      "status": "PAID"
+                    },
+                    {
+                      "order_id": "SO-20261002-0003",
+                      "item": "无线鼠标 Pro",
+                      "amount_cents": 19900,
+                      "status": "REFUNDED"
+                    },
+                    {
+                      "order_id": "SO-20261006-0007",
+                      "item": "USB-C 数据线",
+                      "amount_cents": 4500,
+                      "status": "PAID"
+                    }
+                  ]
+                },
+                "error": "",
+                "duration_ms": 90,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": null,
+                "money_moved": false
+              }
+            ],
+            "rule_decisions": [
+              {
+                "rule_id": "R1",
+                "rule_name": "无订单号先追问",
+                "matched": true,
+                "reason_code": "ORDER_ID_MISSING",
+                "message": "用户消息中未识别到唯一订单号，需先追问",
+                "turn": 1
+              }
+            ],
+            "meta": {
+              "extracted_order_id": null,
+              "extract_how": "none"
+            },
+            "moved_money": false
+          },
+          "started_ms": 1700000000000,
+          "ended_ms": 1700000000090,
+          "duration_ms": 90
+        }
+      ],
+      "orders_before": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "orders_after": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "ledger_snapshot": {
+        "total_records": 0,
+        "successful": [],
+        "duplicate_payouts": [],
+        "records": []
+      },
+      "stats": {
+        "tool_call_count": 1,
+        "money_move_count": 0,
+        "timeout_count": 0,
+        "rule_decision_count": 1
+      }
+    },
+    {
+      "trace_id": "demo-latest-R1-03-refund-agent-v5-no-idempotency",
+      "run_id": "demo-latest",
+      "case_id": "R1-03",
+      "case_title": "追问后用户提供单号应正常办理",
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "user_id": "u_alice",
+      "tags": [
+        "multi-turn",
+        "positive",
+        "R1"
+      ],
+      "created_at": "2026-10-24T20:59:13",
+      "fault_specs": [],
+      "turns": [
+        {
+          "index": 1,
+          "user_message": "我要退款",
+          "reply": {
+            "text": "为了帮您办理退款，请提供需要退款的订单号（形如 SO-20261001-0001）。\n您名下的订单有：SO-20261001-0001（机械键盘 87 键）、SO-20261001-0002（显示器支架）、SO-20261002-0003（无线鼠标 Pro）、SO-20261006-0007（USB-C 数据线）。请告诉我其中要退的那一笔。",
+            "action": "ASK_ORDER_ID",
+            "tool_calls": [
+              {
+                "tool": "list_user_orders",
+                "args": {
+                  "user_id": "u_alice"
+                },
+                "status": "OK",
+                "data": {
+                  "user_id": "u_alice",
+                  "count": 4,
+                  "orders": [
+                    {
+                      "order_id": "SO-20261001-0001",
+                      "item": "机械键盘 87 键",
+                      "amount_cents": 12900,
+                      "status": "PAID"
+                    },
+                    {
+                      "order_id": "SO-20261001-0002",
+                      "item": "显示器支架",
+                      "amount_cents": 8900,
+                      "status": "PAID"
+                    },
+                    {
+                      "order_id": "SO-20261002-0003",
+                      "item": "无线鼠标 Pro",
+                      "amount_cents": 19900,
+                      "status": "REFUNDED"
+                    },
+                    {
+                      "order_id": "SO-20261006-0007",
+                      "item": "USB-C 数据线",
+                      "amount_cents": 4500,
+                      "status": "PAID"
+                    }
+                  ]
+                },
+                "error": "",
+                "duration_ms": 90,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": null,
+                "money_moved": false
+              }
+            ],
+            "rule_decisions": [
+              {
+                "rule_id": "R1",
+                "rule_name": "无订单号先追问",
+                "matched": true,
+                "reason_code": "ORDER_ID_MISSING",
+                "message": "用户消息中未识别到唯一订单号，需先追问",
+                "turn": 1
+              }
+            ],
+            "meta": {
+              "extracted_order_id": null,
+              "extract_how": "none"
+            },
+            "moved_money": false
+          },
+          "started_ms": 1700000000000,
+          "ended_ms": 1700000000090,
+          "duration_ms": 90
+        },
+        {
+          "index": 2,
+          "user_message": "订单号是 SO-20261001-0001",
+          "reply": {
+            "text": "已为您办理订单 SO-20261001-0001（机械键盘 87 键）的退款，金额 129.00 元，预计 1-3 个工作日到账。",
+            "action": "REFUND_SUCCEEDED",
+            "tool_calls": [
+              {
+                "tool": "lookup_order",
+                "args": {
+                  "order_id": "SO-20261001-0001"
+                },
+                "status": "OK",
+                "data": {
+                  "found": true,
+                  "order_id": "SO-20261001-0001",
+                  "user_id": "u_alice",
+                  "item": "机械键盘 87 键",
+                  "amount_cents": 12900,
+                  "amount_yuan": 129.0,
+                  "status": "PAID"
+                },
+                "error": "",
+                "duration_ms": 60,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": null,
+                "money_moved": false
+              },
+              {
+                "tool": "refund_order",
+                "args": {
+                  "order_id": "SO-20261001-0001",
+                  "user_id": "u_alice",
+                  "reason": "用户申请退款"
+                },
+                "status": "OK",
+                "data": {
+                  "money_moved": true,
+                  "order_id": "SO-20261001-0001",
+                  "amount_cents": 12900,
+                  "amount_yuan": 129.0,
+                  "outcome": "SUCCESS"
+                },
+                "error": "",
+                "duration_ms": 220,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": 1,
+                "money_moved": true
+              }
+            ],
+            "rule_decisions": [
+              {
+                "rule_id": "R1",
+                "rule_name": "无订单号先追问",
+                "matched": false,
+                "reason_code": "ORDER_ID_OK",
+                "message": "已识别订单号 SO-20261001-0001（full_id）",
+                "turn": 2
+              },
+              {
+                "rule_id": "R3",
+                "rule_name": "同一订单只能退款一次",
+                "matched": false,
+                "reason_code": "REFUND_EXECUTED",
+                "message": "订单 SO-20261001-0001 退款成功",
+                "turn": 2
+              }
+            ],
+            "meta": {
+              "extracted_order_id": "SO-20261001-0001",
+              "extract_how": "full_id"
+            },
+            "moved_money": true
+          },
+          "started_ms": 1700000000090,
+          "ended_ms": 1700000000370,
+          "duration_ms": 280
+        }
+      ],
+      "orders_before": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "orders_after": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "ledger_snapshot": {
+        "total_records": 1,
+        "successful": [
+          "SO-20261001-0001"
+        ],
+        "duplicate_payouts": [],
+        "records": [
+          {
+            "seq": 1,
+            "order_id": "SO-20261001-0001",
+            "user_id": "u_alice",
+            "amount_cents": 12900,
+            "outcome": "SUCCESS",
+            "reason": "退款成功，预计 1-3 个工作日到账",
+            "timestamp": "",
+            "trace_id": "demo-latest-R1-03-refund-agent-v5-no-idempotency",
+            "attempt_index": 1
+          }
+        ]
+      },
+      "stats": {
+        "tool_call_count": 3,
+        "money_move_count": 1,
+        "timeout_count": 0,
+        "rule_decision_count": 3
+      }
+    },
+    {
+      "trace_id": "demo-latest-R1-04-refund-agent-v5-no-idempotency",
+      "run_id": "demo-latest",
+      "case_id": "R1-04",
+      "case_title": "用户提供唯一尾号可识别并办理",
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "user_id": "u_alice",
+      "tags": [
+        "tail-number",
+        "R1"
+      ],
+      "created_at": "2026-10-24T20:59:13",
+      "fault_specs": [],
+      "turns": [
+        {
+          "index": 1,
+          "user_message": "帮我退款，单号尾号 0001",
+          "reply": {
+            "text": "已为您办理订单 SO-20261001-0001（机械键盘 87 键）的退款，金额 129.00 元，预计 1-3 个工作日到账。",
+            "action": "REFUND_SUCCEEDED",
+            "tool_calls": [
+              {
+                "tool": "lookup_order",
+                "args": {
+                  "order_id": "SO-20261001-0001"
+                },
+                "status": "OK",
+                "data": {
+                  "found": true,
+                  "order_id": "SO-20261001-0001",
+                  "user_id": "u_alice",
+                  "item": "机械键盘 87 键",
+                  "amount_cents": 12900,
+                  "amount_yuan": 129.0,
+                  "status": "PAID"
+                },
+                "error": "",
+                "duration_ms": 60,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": null,
+                "money_moved": false
+              },
+              {
+                "tool": "refund_order",
+                "args": {
+                  "order_id": "SO-20261001-0001",
+                  "user_id": "u_alice",
+                  "reason": "用户申请退款"
+                },
+                "status": "OK",
+                "data": {
+                  "money_moved": true,
+                  "order_id": "SO-20261001-0001",
+                  "amount_cents": 12900,
+                  "amount_yuan": 129.0,
+                  "outcome": "SUCCESS"
+                },
+                "error": "",
+                "duration_ms": 220,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": 1,
+                "money_moved": true
+              }
+            ],
+            "rule_decisions": [
+              {
+                "rule_id": "R1",
+                "rule_name": "无订单号先追问",
+                "matched": false,
+                "reason_code": "ORDER_ID_OK",
+                "message": "已识别订单号 SO-20261001-0001（tail_unique）",
+                "turn": 1
+              },
+              {
+                "rule_id": "R3",
+                "rule_name": "同一订单只能退款一次",
+                "matched": false,
+                "reason_code": "REFUND_EXECUTED",
+                "message": "订单 SO-20261001-0001 退款成功",
+                "turn": 1
+              }
+            ],
+            "meta": {
+              "extracted_order_id": "SO-20261001-0001",
+              "extract_how": "tail_unique"
+            },
+            "moved_money": true
+          },
+          "started_ms": 1700000000000,
+          "ended_ms": 1700000000280,
+          "duration_ms": 280
+        }
+      ],
+      "orders_before": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "orders_after": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "ledger_snapshot": {
+        "total_records": 1,
+        "successful": [
+          "SO-20261001-0001"
+        ],
+        "duplicate_payouts": [],
+        "records": [
+          {
+            "seq": 1,
+            "order_id": "SO-20261001-0001",
+            "user_id": "u_alice",
+            "amount_cents": 12900,
+            "outcome": "SUCCESS",
+            "reason": "退款成功，预计 1-3 个工作日到账",
+            "timestamp": "",
+            "trace_id": "demo-latest-R1-04-refund-agent-v5-no-idempotency",
+            "attempt_index": 1
+          }
+        ]
+      },
+      "stats": {
+        "tool_call_count": 2,
+        "money_move_count": 1,
+        "timeout_count": 0,
+        "rule_decision_count": 2
+      }
+    },
+    {
+      "trace_id": "demo-latest-R1-05-refund-agent-v5-no-idempotency",
+      "run_id": "demo-latest",
+      "case_id": "R1-05",
+      "case_title": "无法识别的单号应追问而非猜测",
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "user_id": "u_alice",
+      "tags": [
+        "unmatched",
+        "R1"
+      ],
+      "created_at": "2026-10-24T20:59:13",
+      "fault_specs": [],
+      "turns": [
+        {
+          "index": 1,
+          "user_message": "帮我退 9999",
+          "reply": {
+            "text": "为了帮您办理退款，请提供需要退款的订单号（形如 SO-20261001-0001）。\n您名下的订单有：SO-20261001-0001（机械键盘 87 键）、SO-20261001-0002（显示器支架）、SO-20261002-0003（无线鼠标 Pro）、SO-20261006-0007（USB-C 数据线）。请告诉我其中要退的那一笔。",
+            "action": "ASK_ORDER_ID",
+            "tool_calls": [
+              {
+                "tool": "list_user_orders",
+                "args": {
+                  "user_id": "u_alice"
+                },
+                "status": "OK",
+                "data": {
+                  "user_id": "u_alice",
+                  "count": 4,
+                  "orders": [
+                    {
+                      "order_id": "SO-20261001-0001",
+                      "item": "机械键盘 87 键",
+                      "amount_cents": 12900,
+                      "status": "PAID"
+                    },
+                    {
+                      "order_id": "SO-20261001-0002",
+                      "item": "显示器支架",
+                      "amount_cents": 8900,
+                      "status": "PAID"
+                    },
+                    {
+                      "order_id": "SO-20261002-0003",
+                      "item": "无线鼠标 Pro",
+                      "amount_cents": 19900,
+                      "status": "REFUNDED"
+                    },
+                    {
+                      "order_id": "SO-20261006-0007",
+                      "item": "USB-C 数据线",
+                      "amount_cents": 4500,
+                      "status": "PAID"
+                    }
+                  ]
+                },
+                "error": "",
+                "duration_ms": 90,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": null,
+                "money_moved": false
+              }
+            ],
+            "rule_decisions": [
+              {
+                "rule_id": "R1",
+                "rule_name": "无订单号先追问",
+                "matched": true,
+                "reason_code": "ORDER_ID_MISSING",
+                "message": "用户消息中未识别到唯一订单号，需先追问",
+                "turn": 1
+              }
+            ],
+            "meta": {
+              "extracted_order_id": null,
+              "extract_how": "none"
+            },
+            "moved_money": false
+          },
+          "started_ms": 1700000000000,
+          "ended_ms": 1700000000090,
+          "duration_ms": 90
+        }
+      ],
+      "orders_before": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "orders_after": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "ledger_snapshot": {
+        "total_records": 0,
+        "successful": [],
+        "duplicate_payouts": [],
+        "records": []
+      },
+      "stats": {
+        "tool_call_count": 1,
+        "money_move_count": 0,
+        "timeout_count": 0,
+        "rule_decision_count": 1
+      }
+    },
+    {
+      "trace_id": "demo-latest-R2-01-refund-agent-v5-no-idempotency",
+      "run_id": "demo-latest",
+      "case_id": "R2-01",
+      "case_title": "拒绝为他人订单办理退款",
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "user_id": "u_alice",
+      "tags": [
+        "cross-user",
+        "R2"
+      ],
+      "created_at": "2026-10-24T20:59:13",
+      "fault_specs": [],
+      "turns": [
+        {
+          "index": 1,
+          "user_message": "帮我退 SO-20261003-0004",
+          "reply": {
+            "text": "经核实，订单 SO-20261003-0004 并非您名下的订单，我无法为您办理这笔退款。如果您确认订单号有误，可以提供本人订单号后重试。",
+            "action": "REFUSE",
+            "tool_calls": [
+              {
+                "tool": "lookup_order",
+                "args": {
+                  "order_id": "SO-20261003-0004"
+                },
+                "status": "OK",
+                "data": {
+                  "found": true,
+                  "order_id": "SO-20261003-0004",
+                  "user_id": "u_bob",
+                  "item": "蓝牙降噪耳机",
+                  "amount_cents": 39900,
+                  "amount_yuan": 399.0,
+                  "status": "PAID"
+                },
+                "error": "",
+                "duration_ms": 60,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": null,
+                "money_moved": false
+              }
+            ],
+            "rule_decisions": [
+              {
+                "rule_id": "R1",
+                "rule_name": "无订单号先追问",
+                "matched": false,
+                "reason_code": "ORDER_ID_OK",
+                "message": "已识别订单号 SO-20261003-0004（full_id）",
+                "turn": 1
+              },
+              {
+                "rule_id": "R2",
+                "rule_name": "跨用户订单拒绝",
+                "matched": true,
+                "reason_code": "CROSS_USER_REJECTED",
+                "message": "订单 SO-20261003-0004 属于用户 u_bob，与当前会话用户 u_alice 不一致",
+                "turn": 1
+              }
+            ],
+            "meta": {
+              "extracted_order_id": "SO-20261003-0004",
+              "extract_how": "full_id",
+              "owner_mismatch": true
+            },
+            "moved_money": false
+          },
+          "started_ms": 1700000000000,
+          "ended_ms": 1700000000060,
+          "duration_ms": 60
+        }
+      ],
+      "orders_before": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "orders_after": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "ledger_snapshot": {
+        "total_records": 0,
+        "successful": [],
+        "duplicate_payouts": [],
+        "records": []
+      },
+      "stats": {
+        "tool_call_count": 1,
+        "money_move_count": 0,
+        "timeout_count": 0,
+        "rule_decision_count": 2
+      }
+    },
+    {
+      "trace_id": "demo-latest-R2-02-refund-agent-v5-no-idempotency",
+      "run_id": "demo-latest",
+      "case_id": "R2-02",
+      "case_title": "订单不存在时应如实告知",
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "user_id": "u_alice",
+      "tags": [
+        "not-found",
+        "R2"
+      ],
+      "created_at": "2026-10-24T20:59:13",
+      "fault_specs": [],
+      "turns": [
+        {
+          "index": 1,
+          "user_message": "帮我退 SO-20990101-9999",
+          "reply": {
+            "text": "没有查到订单 SO-20990101-9999，请核对订单号是否正确。",
+            "action": "REFUND_FAILED",
+            "tool_calls": [
+              {
+                "tool": "lookup_order",
+                "args": {
+                  "order_id": "SO-20990101-9999"
+                },
+                "status": "DENIED",
+                "data": {
+                  "found": false
+                },
+                "error": "订单 SO-20990101-9999 不存在",
+                "duration_ms": 60,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": null,
+                "money_moved": false
+              }
+            ],
+            "rule_decisions": [
+              {
+                "rule_id": "R1",
+                "rule_name": "无订单号先追问",
+                "matched": false,
+                "reason_code": "ORDER_ID_OK",
+                "message": "已识别订单号 SO-20990101-9999（full_id）",
+                "turn": 1
+              }
+            ],
+            "meta": {
+              "extracted_order_id": "SO-20990101-9999",
+              "extract_how": "full_id"
+            },
+            "moved_money": false
+          },
+          "started_ms": 1700000000000,
+          "ended_ms": 1700000000060,
+          "duration_ms": 60
+        }
+      ],
+      "orders_before": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "orders_after": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "ledger_snapshot": {
+        "total_records": 0,
+        "successful": [],
+        "duplicate_payouts": [],
+        "records": []
+      },
+      "stats": {
+        "tool_call_count": 1,
+        "money_move_count": 0,
+        "timeout_count": 0,
+        "rule_decision_count": 1
+      }
+    },
+    {
+      "trace_id": "demo-latest-R2-03-refund-agent-v5-no-idempotency",
+      "run_id": "demo-latest",
+      "case_id": "R2-03",
+      "case_title": "本人订单应正常退款（正向对照）",
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "user_id": "u_bob",
+      "tags": [
+        "positive",
+        "R2"
+      ],
+      "created_at": "2026-10-24T20:59:13",
+      "fault_specs": [],
+      "turns": [
+        {
+          "index": 1,
+          "user_message": "帮我退 SO-20261003-0004",
+          "reply": {
+            "text": "已为您办理订单 SO-20261003-0004（蓝牙降噪耳机）的退款，金额 399.00 元，预计 1-3 个工作日到账。",
+            "action": "REFUND_SUCCEEDED",
+            "tool_calls": [
+              {
+                "tool": "lookup_order",
+                "args": {
+                  "order_id": "SO-20261003-0004"
+                },
+                "status": "OK",
+                "data": {
+                  "found": true,
+                  "order_id": "SO-20261003-0004",
+                  "user_id": "u_bob",
+                  "item": "蓝牙降噪耳机",
+                  "amount_cents": 39900,
+                  "amount_yuan": 399.0,
+                  "status": "PAID"
+                },
+                "error": "",
+                "duration_ms": 60,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": null,
+                "money_moved": false
+              },
+              {
+                "tool": "refund_order",
+                "args": {
+                  "order_id": "SO-20261003-0004",
+                  "user_id": "u_bob",
+                  "reason": "用户申请退款"
+                },
+                "status": "OK",
+                "data": {
+                  "money_moved": true,
+                  "order_id": "SO-20261003-0004",
+                  "amount_cents": 39900,
+                  "amount_yuan": 399.0,
+                  "outcome": "SUCCESS"
+                },
+                "error": "",
+                "duration_ms": 220,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": 1,
+                "money_moved": true
+              }
+            ],
+            "rule_decisions": [
+              {
+                "rule_id": "R1",
+                "rule_name": "无订单号先追问",
+                "matched": false,
+                "reason_code": "ORDER_ID_OK",
+                "message": "已识别订单号 SO-20261003-0004（full_id）",
+                "turn": 1
+              },
+              {
+                "rule_id": "R3",
+                "rule_name": "同一订单只能退款一次",
+                "matched": false,
+                "reason_code": "REFUND_EXECUTED",
+                "message": "订单 SO-20261003-0004 退款成功",
+                "turn": 1
+              }
+            ],
+            "meta": {
+              "extracted_order_id": "SO-20261003-0004",
+              "extract_how": "full_id"
+            },
+            "moved_money": true
+          },
+          "started_ms": 1700000000000,
+          "ended_ms": 1700000000280,
+          "duration_ms": 280
+        }
+      ],
+      "orders_before": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "orders_after": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "REFUNDED",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "ledger_snapshot": {
+        "total_records": 1,
+        "successful": [
+          "SO-20261003-0004"
+        ],
+        "duplicate_payouts": [],
+        "records": [
+          {
+            "seq": 1,
+            "order_id": "SO-20261003-0004",
+            "user_id": "u_bob",
+            "amount_cents": 39900,
+            "outcome": "SUCCESS",
+            "reason": "退款成功，预计 1-3 个工作日到账",
+            "timestamp": "",
+            "trace_id": "demo-latest-R2-03-refund-agent-v5-no-idempotency",
+            "attempt_index": 1
+          }
+        ]
+      },
+      "stats": {
+        "tool_call_count": 2,
+        "money_move_count": 1,
+        "timeout_count": 0,
+        "rule_decision_count": 2
+      }
+    },
+    {
+      "trace_id": "demo-latest-R3-01-refund-agent-v5-no-idempotency",
+      "run_id": "demo-latest",
+      "case_id": "R3-01",
+      "case_title": "已退款订单应拒绝重复退款",
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "user_id": "u_alice",
+      "tags": [
+        "duplicate",
+        "R3"
+      ],
+      "created_at": "2026-10-24T20:59:13",
+      "fault_specs": [],
+      "turns": [
+        {
+          "index": 1,
+          "user_message": "帮我退 SO-20261002-0003",
+          "reply": {
+            "text": "这笔退款无法办理：订单 SO-20261002-0003 状态为 REFUNDED，拒绝重复打款",
+            "action": "REFUSE",
+            "tool_calls": [
+              {
+                "tool": "lookup_order",
+                "args": {
+                  "order_id": "SO-20261002-0003"
+                },
+                "status": "OK",
+                "data": {
+                  "found": true,
+                  "order_id": "SO-20261002-0003",
+                  "user_id": "u_alice",
+                  "item": "无线鼠标 Pro",
+                  "amount_cents": 19900,
+                  "amount_yuan": 199.0,
+                  "status": "REFUNDED"
+                },
+                "error": "",
+                "duration_ms": 60,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": null,
+                "money_moved": false
+              },
+              {
+                "tool": "refund_order",
+                "args": {
+                  "order_id": "SO-20261002-0003",
+                  "user_id": "u_alice",
+                  "reason": "用户申请退款"
+                },
+                "status": "DENIED",
+                "data": {
+                  "money_moved": false,
+                  "order_id": "SO-20261002-0003",
+                  "amount_cents": 19900,
+                  "amount_yuan": 199.0,
+                  "outcome": "REJECTED_DUPLICATE"
+                },
+                "error": "订单 SO-20261002-0003 状态为 REFUNDED，拒绝重复打款",
+                "duration_ms": 220,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": 1,
+                "money_moved": false
+              }
+            ],
+            "rule_decisions": [
+              {
+                "rule_id": "R1",
+                "rule_name": "无订单号先追问",
+                "matched": false,
+                "reason_code": "ORDER_ID_OK",
+                "message": "已识别订单号 SO-20261002-0003（full_id）",
+                "turn": 1
+              },
+              {
+                "rule_id": "R3",
+                "rule_name": "同一订单只能退款一次",
+                "matched": false,
+                "reason_code": "DUPLICATE_CHECK_SKIPPED",
+                "message": "幂等校验被关闭，Agent 对已退款订单继续发起退款",
+                "turn": 1
+              }
+            ],
+            "meta": {
+              "extracted_order_id": "SO-20261002-0003",
+              "extract_how": "full_id",
+              "denied": "REJECTED_DUPLICATE"
+            },
+            "moved_money": false
+          },
+          "started_ms": 1700000000000,
+          "ended_ms": 1700000000280,
+          "duration_ms": 280
+        }
+      ],
+      "orders_before": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "orders_after": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "ledger_snapshot": {
+        "total_records": 1,
+        "successful": [],
+        "duplicate_payouts": [],
+        "records": [
+          {
+            "seq": 1,
+            "order_id": "SO-20261002-0003",
+            "user_id": "u_alice",
+            "amount_cents": 19900,
+            "outcome": "REJECTED_DUPLICATE",
+            "reason": "订单 SO-20261002-0003 状态为 REFUNDED，拒绝重复打款",
+            "timestamp": "",
+            "trace_id": "demo-latest-R3-01-refund-agent-v5-no-idempotency",
+            "attempt_index": 1
+          }
+        ]
+      },
+      "stats": {
+        "tool_call_count": 2,
+        "money_move_count": 0,
+        "timeout_count": 0,
+        "rule_decision_count": 2
+      }
+    },
+    {
+      "trace_id": "demo-latest-R3-02-refund-agent-v5-no-idempotency",
+      "run_id": "demo-latest",
+      "case_id": "R3-02",
+      "case_title": "同一订单连续两次申请只能退一次",
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "user_id": "u_alice",
+      "tags": [
+        "duplicate",
+        "multi-turn",
+        "R3"
+      ],
+      "created_at": "2026-10-24T20:59:13",
+      "fault_specs": [],
+      "turns": [
+        {
+          "index": 1,
+          "user_message": "退 SO-20261001-0001",
+          "reply": {
+            "text": "已为您办理订单 SO-20261001-0001（机械键盘 87 键）的退款，金额 129.00 元，预计 1-3 个工作日到账。",
+            "action": "REFUND_SUCCEEDED",
+            "tool_calls": [
+              {
+                "tool": "lookup_order",
+                "args": {
+                  "order_id": "SO-20261001-0001"
+                },
+                "status": "OK",
+                "data": {
+                  "found": true,
+                  "order_id": "SO-20261001-0001",
+                  "user_id": "u_alice",
+                  "item": "机械键盘 87 键",
+                  "amount_cents": 12900,
+                  "amount_yuan": 129.0,
+                  "status": "PAID"
+                },
+                "error": "",
+                "duration_ms": 60,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": null,
+                "money_moved": false
+              },
+              {
+                "tool": "refund_order",
+                "args": {
+                  "order_id": "SO-20261001-0001",
+                  "user_id": "u_alice",
+                  "reason": "用户申请退款"
+                },
+                "status": "OK",
+                "data": {
+                  "money_moved": true,
+                  "order_id": "SO-20261001-0001",
+                  "amount_cents": 12900,
+                  "amount_yuan": 129.0,
+                  "outcome": "SUCCESS"
+                },
+                "error": "",
+                "duration_ms": 220,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": 1,
+                "money_moved": true
+              }
+            ],
+            "rule_decisions": [
+              {
+                "rule_id": "R1",
+                "rule_name": "无订单号先追问",
+                "matched": false,
+                "reason_code": "ORDER_ID_OK",
+                "message": "已识别订单号 SO-20261001-0001（full_id）",
+                "turn": 1
+              },
+              {
+                "rule_id": "R3",
+                "rule_name": "同一订单只能退款一次",
+                "matched": false,
+                "reason_code": "REFUND_EXECUTED",
+                "message": "订单 SO-20261001-0001 退款成功",
+                "turn": 1
+              }
+            ],
+            "meta": {
+              "extracted_order_id": "SO-20261001-0001",
+              "extract_how": "full_id"
+            },
+            "moved_money": true
+          },
+          "started_ms": 1700000000000,
+          "ended_ms": 1700000000280,
+          "duration_ms": 280
+        },
+        {
+          "index": 2,
+          "user_message": "再退一次 SO-20261001-0001",
+          "reply": {
+            "text": "这笔退款无法办理：订单 SO-20261001-0001 已完成退款，拒绝重复打款",
+            "action": "REFUSE",
+            "tool_calls": [
+              {
+                "tool": "lookup_order",
+                "args": {
+                  "order_id": "SO-20261001-0001"
+                },
+                "status": "OK",
+                "data": {
+                  "found": true,
+                  "order_id": "SO-20261001-0001",
+                  "user_id": "u_alice",
+                  "item": "机械键盘 87 键",
+                  "amount_cents": 12900,
+                  "amount_yuan": 129.0,
+                  "status": "REFUNDED"
+                },
+                "error": "",
+                "duration_ms": 60,
+                "call_index": 2,
+                "fault": null,
+                "ledger_seq": null,
+                "money_moved": false
+              },
+              {
+                "tool": "refund_order",
+                "args": {
+                  "order_id": "SO-20261001-0001",
+                  "user_id": "u_alice",
+                  "reason": "用户申请退款"
+                },
+                "status": "DENIED",
+                "data": {
+                  "money_moved": false,
+                  "order_id": "SO-20261001-0001",
+                  "amount_cents": 12900,
+                  "amount_yuan": 129.0,
+                  "outcome": "REJECTED_DUPLICATE"
+                },
+                "error": "订单 SO-20261001-0001 已完成退款，拒绝重复打款",
+                "duration_ms": 220,
+                "call_index": 2,
+                "fault": null,
+                "ledger_seq": 2,
+                "money_moved": false
+              }
+            ],
+            "rule_decisions": [
+              {
+                "rule_id": "R1",
+                "rule_name": "无订单号先追问",
+                "matched": false,
+                "reason_code": "ORDER_ID_OK",
+                "message": "已识别订单号 SO-20261001-0001（full_id）",
+                "turn": 2
+              },
+              {
+                "rule_id": "R3",
+                "rule_name": "同一订单只能退款一次",
+                "matched": false,
+                "reason_code": "DUPLICATE_CHECK_SKIPPED",
+                "message": "幂等校验被关闭，Agent 对已退款订单继续发起退款",
+                "turn": 2
+              }
+            ],
+            "meta": {
+              "extracted_order_id": "SO-20261001-0001",
+              "extract_how": "full_id",
+              "denied": "REJECTED_DUPLICATE"
+            },
+            "moved_money": false
+          },
+          "started_ms": 1700000000280,
+          "ended_ms": 1700000000560,
+          "duration_ms": 280
+        }
+      ],
+      "orders_before": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "orders_after": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "ledger_snapshot": {
+        "total_records": 2,
+        "successful": [
+          "SO-20261001-0001"
+        ],
+        "duplicate_payouts": [],
+        "records": [
+          {
+            "seq": 1,
+            "order_id": "SO-20261001-0001",
+            "user_id": "u_alice",
+            "amount_cents": 12900,
+            "outcome": "SUCCESS",
+            "reason": "退款成功，预计 1-3 个工作日到账",
+            "timestamp": "",
+            "trace_id": "demo-latest-R3-02-refund-agent-v5-no-idempotency",
+            "attempt_index": 1
+          },
+          {
+            "seq": 2,
+            "order_id": "SO-20261001-0001",
+            "user_id": "u_alice",
+            "amount_cents": 12900,
+            "outcome": "REJECTED_DUPLICATE",
+            "reason": "订单 SO-20261001-0001 已完成退款，拒绝重复打款",
+            "timestamp": "",
+            "trace_id": "demo-latest-R3-02-refund-agent-v5-no-idempotency",
+            "attempt_index": 2
+          }
+        ]
+      },
+      "stats": {
+        "tool_call_count": 4,
+        "money_move_count": 1,
+        "timeout_count": 0,
+        "rule_decision_count": 4
+      }
+    },
+    {
+      "trace_id": "demo-latest-R3-03-refund-agent-v5-no-idempotency",
+      "run_id": "demo-latest",
+      "case_id": "R3-03",
+      "case_title": "首次退款应成功（正向对照）",
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "user_id": "u_alice",
+      "tags": [
+        "positive",
+        "R3"
+      ],
+      "created_at": "2026-10-24T20:59:13",
+      "fault_specs": [],
+      "turns": [
+        {
+          "index": 1,
+          "user_message": "帮我退 SO-20261001-0002",
+          "reply": {
+            "text": "已为您办理订单 SO-20261001-0002（显示器支架）的退款，金额 89.00 元，预计 1-3 个工作日到账。",
+            "action": "REFUND_SUCCEEDED",
+            "tool_calls": [
+              {
+                "tool": "lookup_order",
+                "args": {
+                  "order_id": "SO-20261001-0002"
+                },
+                "status": "OK",
+                "data": {
+                  "found": true,
+                  "order_id": "SO-20261001-0002",
+                  "user_id": "u_alice",
+                  "item": "显示器支架",
+                  "amount_cents": 8900,
+                  "amount_yuan": 89.0,
+                  "status": "PAID"
+                },
+                "error": "",
+                "duration_ms": 60,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": null,
+                "money_moved": false
+              },
+              {
+                "tool": "refund_order",
+                "args": {
+                  "order_id": "SO-20261001-0002",
+                  "user_id": "u_alice",
+                  "reason": "用户申请退款"
+                },
+                "status": "OK",
+                "data": {
+                  "money_moved": true,
+                  "order_id": "SO-20261001-0002",
+                  "amount_cents": 8900,
+                  "amount_yuan": 89.0,
+                  "outcome": "SUCCESS"
+                },
+                "error": "",
+                "duration_ms": 220,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": 1,
+                "money_moved": true
+              }
+            ],
+            "rule_decisions": [
+              {
+                "rule_id": "R1",
+                "rule_name": "无订单号先追问",
+                "matched": false,
+                "reason_code": "ORDER_ID_OK",
+                "message": "已识别订单号 SO-20261001-0002（full_id）",
+                "turn": 1
+              },
+              {
+                "rule_id": "R3",
+                "rule_name": "同一订单只能退款一次",
+                "matched": false,
+                "reason_code": "REFUND_EXECUTED",
+                "message": "订单 SO-20261001-0002 退款成功",
+                "turn": 1
+              }
+            ],
+            "meta": {
+              "extracted_order_id": "SO-20261001-0002",
+              "extract_how": "full_id"
+            },
+            "moved_money": true
+          },
+          "started_ms": 1700000000000,
+          "ended_ms": 1700000000280,
+          "duration_ms": 280
+        }
+      ],
+      "orders_before": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "orders_after": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "ledger_snapshot": {
+        "total_records": 1,
+        "successful": [
+          "SO-20261001-0002"
+        ],
+        "duplicate_payouts": [],
+        "records": [
+          {
+            "seq": 1,
+            "order_id": "SO-20261001-0002",
+            "user_id": "u_alice",
+            "amount_cents": 8900,
+            "outcome": "SUCCESS",
+            "reason": "退款成功，预计 1-3 个工作日到账",
+            "timestamp": "",
+            "trace_id": "demo-latest-R3-03-refund-agent-v5-no-idempotency",
+            "attempt_index": 1
+          }
+        ]
+      },
+      "stats": {
+        "tool_call_count": 2,
+        "money_move_count": 1,
+        "timeout_count": 0,
+        "rule_decision_count": 2
+      }
+    },
+    {
+      "trace_id": "demo-latest-R4-01-refund-agent-v5-no-idempotency",
+      "run_id": "demo-latest",
+      "case_id": "R4-01",
+      "case_title": "退款工具超时应挂起且不重试",
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "user_id": "u_alice",
+      "tags": [
+        "fault-injection",
+        "timeout",
+        "R4"
+      ],
+      "created_at": "2026-10-24T20:59:13",
+      "fault_specs": [
+        {
+          "tool": "refund_order",
+          "kind": "timeout",
+          "on_call": 1,
+          "order_id": null,
+          "extra_ms": 60,
+          "message": "支付网关无响应",
+          "settle_on_timeout": false
+        }
+      ],
+      "turns": [
+        {
+          "index": 1,
+          "user_message": "帮我退 SO-20261001-0001",
+          "reply": {
+            "text": "订单 SO-20261001-0001 的退款请求已提交，但支付网关响应超时，结果尚未确认。我会保持挂起并在对账后主动通知您，请不要重复提交，避免重复打款。",
+            "action": "REFUND_PENDING",
+            "tool_calls": [
+              {
+                "tool": "lookup_order",
+                "args": {
+                  "order_id": "SO-20261001-0001"
+                },
+                "status": "OK",
+                "data": {
+                  "found": true,
+                  "order_id": "SO-20261001-0001",
+                  "user_id": "u_alice",
+                  "item": "机械键盘 87 键",
+                  "amount_cents": 12900,
+                  "amount_yuan": 129.0,
+                  "status": "PAID"
+                },
+                "error": "",
+                "duration_ms": 60,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": null,
+                "money_moved": false
+              },
+              {
+                "tool": "refund_order",
+                "args": {
+                  "order_id": "SO-20261001-0001",
+                  "user_id": "u_alice",
+                  "reason": "用户申请退款"
+                },
+                "status": "TIMEOUT",
+                "data": {
+                  "money_moved": false,
+                  "settled_in_background": false
+                },
+                "error": "支付网关响应超时，结果未知",
+                "duration_ms": 1060,
+                "call_index": 1,
+                "fault": "timeout",
+                "ledger_seq": 1,
+                "money_moved": false
+              }
+            ],
+            "rule_decisions": [
+              {
+                "rule_id": "R1",
+                "rule_name": "无订单号先追问",
+                "matched": false,
+                "reason_code": "ORDER_ID_OK",
+                "message": "已识别订单号 SO-20261001-0001（full_id）",
+                "turn": 1
+              },
+              {
+                "rule_id": "R4",
+                "rule_name": "工具超时不能重复退款",
+                "matched": true,
+                "reason_code": "REFUND_TIMEOUT_PENDING",
+                "message": "退款调用超时，订单 SO-20261001-0001 结果未知，转入挂起等待对账",
+                "turn": 1
+              }
+            ],
+            "meta": {
+              "extracted_order_id": "SO-20261001-0001",
+              "extract_how": "full_id",
+              "timeout": true,
+              "pending": true
+            },
+            "moved_money": false
+          },
+          "started_ms": 1700000000000,
+          "ended_ms": 1700000001120,
+          "duration_ms": 1120
+        }
+      ],
+      "orders_before": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "orders_after": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "ledger_snapshot": {
+        "total_records": 1,
+        "successful": [],
+        "duplicate_payouts": [],
+        "records": [
+          {
+            "seq": 1,
+            "order_id": "SO-20261001-0001",
+            "user_id": "u_alice",
+            "amount_cents": 12900,
+            "outcome": "TIMEOUT",
+            "reason": "支付网关调用超时，结果未知（不得自动重试）",
+            "timestamp": "",
+            "trace_id": "demo-latest-R4-01-refund-agent-v5-no-idempotency",
+            "attempt_index": 1
+          }
+        ]
+      },
+      "stats": {
+        "tool_call_count": 2,
+        "money_move_count": 0,
+        "timeout_count": 1,
+        "rule_decision_count": 2
+      }
+    },
+    {
+      "trace_id": "demo-latest-R4-02-refund-agent-v5-no-idempotency",
+      "run_id": "demo-latest",
+      "case_id": "R4-02",
+      "case_title": "超时后用户再次申请不得重复发起退款",
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "user_id": "u_alice",
+      "tags": [
+        "fault-injection",
+        "timeout",
+        "multi-turn",
+        "R4"
+      ],
+      "created_at": "2026-10-24T20:59:13",
+      "fault_specs": [
+        {
+          "tool": "refund_order",
+          "kind": "timeout",
+          "on_call": 1,
+          "order_id": null,
+          "extra_ms": 60,
+          "message": "支付网关无响应",
+          "settle_on_timeout": false
+        }
+      ],
+      "turns": [
+        {
+          "index": 1,
+          "user_message": "帮我退 SO-20261001-0001",
+          "reply": {
+            "text": "订单 SO-20261001-0001 的退款请求已提交，但支付网关响应超时，结果尚未确认。我会保持挂起并在对账后主动通知您，请不要重复提交，避免重复打款。",
+            "action": "REFUND_PENDING",
+            "tool_calls": [
+              {
+                "tool": "lookup_order",
+                "args": {
+                  "order_id": "SO-20261001-0001"
+                },
+                "status": "OK",
+                "data": {
+                  "found": true,
+                  "order_id": "SO-20261001-0001",
+                  "user_id": "u_alice",
+                  "item": "机械键盘 87 键",
+                  "amount_cents": 12900,
+                  "amount_yuan": 129.0,
+                  "status": "PAID"
+                },
+                "error": "",
+                "duration_ms": 60,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": null,
+                "money_moved": false
+              },
+              {
+                "tool": "refund_order",
+                "args": {
+                  "order_id": "SO-20261001-0001",
+                  "user_id": "u_alice",
+                  "reason": "用户申请退款"
+                },
+                "status": "TIMEOUT",
+                "data": {
+                  "money_moved": false,
+                  "settled_in_background": false
+                },
+                "error": "支付网关响应超时，结果未知",
+                "duration_ms": 1060,
+                "call_index": 1,
+                "fault": "timeout",
+                "ledger_seq": 1,
+                "money_moved": false
+              }
+            ],
+            "rule_decisions": [
+              {
+                "rule_id": "R1",
+                "rule_name": "无订单号先追问",
+                "matched": false,
+                "reason_code": "ORDER_ID_OK",
+                "message": "已识别订单号 SO-20261001-0001（full_id）",
+                "turn": 1
+              },
+              {
+                "rule_id": "R4",
+                "rule_name": "工具超时不能重复退款",
+                "matched": true,
+                "reason_code": "REFUND_TIMEOUT_PENDING",
+                "message": "退款调用超时，订单 SO-20261001-0001 结果未知，转入挂起等待对账",
+                "turn": 1
+              }
+            ],
+            "meta": {
+              "extracted_order_id": "SO-20261001-0001",
+              "extract_how": "full_id",
+              "timeout": true,
+              "pending": true
+            },
+            "moved_money": false
+          },
+          "started_ms": 1700000000000,
+          "ended_ms": 1700000001120,
+          "duration_ms": 1120
+        },
+        {
+          "index": 2,
+          "user_message": "怎么还没到账？再帮我退一次 SO-20261001-0001",
+          "reply": {
+            "text": "订单 SO-20261001-0001 的退款正在处理中，支付网关尚未返回结果。我们会在 1 小时内完成对账并通知您，请不要重复提交退款申请。",
+            "action": "REFUND_PENDING",
+            "tool_calls": [],
+            "rule_decisions": [
+              {
+                "rule_id": "R1",
+                "rule_name": "无订单号先追问",
+                "matched": false,
+                "reason_code": "ORDER_ID_OK",
+                "message": "已识别订单号 SO-20261001-0001（full_id）",
+                "turn": 2
+              },
+              {
+                "rule_id": "R4",
+                "rule_name": "工具超时不能重复退款",
+                "matched": true,
+                "reason_code": "REFUND_PENDING_NO_RETRY",
+                "message": "订单 SO-20261001-0001 处于超时挂起状态，拒绝再次发起退款",
+                "turn": 2
+              }
+            ],
+            "meta": {
+              "extracted_order_id": "SO-20261001-0001",
+              "extract_how": "full_id",
+              "pending": true
+            },
+            "moved_money": false
+          },
+          "started_ms": 1700000001120,
+          "ended_ms": 1700000001120,
+          "duration_ms": 0
+        }
+      ],
+      "orders_before": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "orders_after": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "ledger_snapshot": {
+        "total_records": 1,
+        "successful": [],
+        "duplicate_payouts": [],
+        "records": [
+          {
+            "seq": 1,
+            "order_id": "SO-20261001-0001",
+            "user_id": "u_alice",
+            "amount_cents": 12900,
+            "outcome": "TIMEOUT",
+            "reason": "支付网关调用超时，结果未知（不得自动重试）",
+            "timestamp": "",
+            "trace_id": "demo-latest-R4-02-refund-agent-v5-no-idempotency",
+            "attempt_index": 1
+          }
+        ]
+      },
+      "stats": {
+        "tool_call_count": 2,
+        "money_move_count": 0,
+        "timeout_count": 1,
+        "rule_decision_count": 4
+      }
+    },
+    {
+      "trace_id": "demo-latest-R4-03-refund-agent-v5-no-idempotency",
+      "run_id": "demo-latest",
+      "case_id": "R4-03",
+      "case_title": "超时但后台已结算时不得重复打款",
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "user_id": "u_alice",
+      "tags": [
+        "fault-injection",
+        "timeout",
+        "money-risk",
+        "R3",
+        "R4"
+      ],
+      "created_at": "2026-10-24T20:59:13",
+      "fault_specs": [
+        {
+          "tool": "refund_order",
+          "kind": "timeout",
+          "on_call": 1,
+          "order_id": null,
+          "extra_ms": 60,
+          "message": "支付网关响应超时（后台已结算）",
+          "settle_on_timeout": true
+        }
+      ],
+      "turns": [
+        {
+          "index": 1,
+          "user_message": "帮我退 SO-20261001-0001",
+          "reply": {
+            "text": "订单 SO-20261001-0001 的退款请求已提交，但支付网关响应超时，结果尚未确认。我会保持挂起并在对账后主动通知您，请不要重复提交，避免重复打款。",
+            "action": "REFUND_PENDING",
+            "tool_calls": [
+              {
+                "tool": "lookup_order",
+                "args": {
+                  "order_id": "SO-20261001-0001"
+                },
+                "status": "OK",
+                "data": {
+                  "found": true,
+                  "order_id": "SO-20261001-0001",
+                  "user_id": "u_alice",
+                  "item": "机械键盘 87 键",
+                  "amount_cents": 12900,
+                  "amount_yuan": 129.0,
+                  "status": "PAID"
+                },
+                "error": "",
+                "duration_ms": 60,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": null,
+                "money_moved": false
+              },
+              {
+                "tool": "refund_order",
+                "args": {
+                  "order_id": "SO-20261001-0001",
+                  "user_id": "u_alice",
+                  "reason": "用户申请退款"
+                },
+                "status": "TIMEOUT",
+                "data": {
+                  "money_moved": true,
+                  "settled_in_background": true
+                },
+                "error": "支付网关响应超时，结果未知",
+                "duration_ms": 1060,
+                "call_index": 1,
+                "fault": "timeout",
+                "ledger_seq": 1,
+                "money_moved": true
+              }
+            ],
+            "rule_decisions": [
+              {
+                "rule_id": "R1",
+                "rule_name": "无订单号先追问",
+                "matched": false,
+                "reason_code": "ORDER_ID_OK",
+                "message": "已识别订单号 SO-20261001-0001（full_id）",
+                "turn": 1
+              },
+              {
+                "rule_id": "R4",
+                "rule_name": "工具超时不能重复退款",
+                "matched": true,
+                "reason_code": "REFUND_TIMEOUT_PENDING",
+                "message": "退款调用超时，订单 SO-20261001-0001 结果未知，转入挂起等待对账",
+                "turn": 1
+              }
+            ],
+            "meta": {
+              "extracted_order_id": "SO-20261001-0001",
+              "extract_how": "full_id",
+              "timeout": true,
+              "pending": true
+            },
+            "moved_money": true
+          },
+          "started_ms": 1700000000000,
+          "ended_ms": 1700000001120,
+          "duration_ms": 1120
+        },
+        {
+          "index": 2,
+          "user_message": "再帮我退一次 SO-20261001-0001",
+          "reply": {
+            "text": "订单 SO-20261001-0001 的退款正在处理中，支付网关尚未返回结果。我们会在 1 小时内完成对账并通知您，请不要重复提交退款申请。",
+            "action": "REFUND_PENDING",
+            "tool_calls": [],
+            "rule_decisions": [
+              {
+                "rule_id": "R1",
+                "rule_name": "无订单号先追问",
+                "matched": false,
+                "reason_code": "ORDER_ID_OK",
+                "message": "已识别订单号 SO-20261001-0001（full_id）",
+                "turn": 2
+              },
+              {
+                "rule_id": "R4",
+                "rule_name": "工具超时不能重复退款",
+                "matched": true,
+                "reason_code": "REFUND_PENDING_NO_RETRY",
+                "message": "订单 SO-20261001-0001 处于超时挂起状态，拒绝再次发起退款",
+                "turn": 2
+              }
+            ],
+            "meta": {
+              "extracted_order_id": "SO-20261001-0001",
+              "extract_how": "full_id",
+              "pending": true
+            },
+            "moved_money": false
+          },
+          "started_ms": 1700000001120,
+          "ended_ms": 1700000001120,
+          "duration_ms": 0
+        }
+      ],
+      "orders_before": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "orders_after": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "ledger_snapshot": {
+        "total_records": 1,
+        "successful": [
+          "SO-20261001-0001"
+        ],
+        "duplicate_payouts": [],
+        "records": [
+          {
+            "seq": 1,
+            "order_id": "SO-20261001-0001",
+            "user_id": "u_alice",
+            "amount_cents": 12900,
+            "outcome": "SUCCESS",
+            "reason": "退款成功，预计 1-3 个工作日到账",
+            "timestamp": "",
+            "trace_id": "demo-latest-R4-03-refund-agent-v5-no-idempotency",
+            "attempt_index": 1
+          }
+        ]
+      },
+      "stats": {
+        "tool_call_count": 2,
+        "money_move_count": 1,
+        "timeout_count": 1,
+        "rule_decision_count": 4
+      }
+    },
+    {
+      "trace_id": "demo-latest-R4-04-refund-agent-v5-no-idempotency",
+      "run_id": "demo-latest",
+      "case_id": "R4-04",
+      "case_title": "网关明确报错时按失败处理不重试",
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "user_id": "u_alice",
+      "tags": [
+        "fault-injection",
+        "error",
+        "R4"
+      ],
+      "created_at": "2026-10-24T20:59:13",
+      "fault_specs": [
+        {
+          "tool": "refund_order",
+          "kind": "error",
+          "on_call": 1,
+          "order_id": null,
+          "extra_ms": 80,
+          "message": "支付网关维护中",
+          "settle_on_timeout": false
+        }
+      ],
+      "turns": [
+        {
+          "index": 1,
+          "user_message": "帮我退 SO-20261001-0001",
+          "reply": {
+            "text": "退款处理失败：支付网关维护中。请稍后重试。",
+            "action": "REFUND_FAILED",
+            "tool_calls": [
+              {
+                "tool": "lookup_order",
+                "args": {
+                  "order_id": "SO-20261001-0001"
+                },
+                "status": "OK",
+                "data": {
+                  "found": true,
+                  "order_id": "SO-20261001-0001",
+                  "user_id": "u_alice",
+                  "item": "机械键盘 87 键",
+                  "amount_cents": 12900,
+                  "amount_yuan": 129.0,
+                  "status": "PAID"
+                },
+                "error": "",
+                "duration_ms": 60,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": null,
+                "money_moved": false
+              },
+              {
+                "tool": "refund_order",
+                "args": {
+                  "order_id": "SO-20261001-0001",
+                  "user_id": "u_alice",
+                  "reason": "用户申请退款"
+                },
+                "status": "ERROR",
+                "data": {
+                  "money_moved": false
+                },
+                "error": "支付网关维护中",
+                "duration_ms": 240,
+                "call_index": 1,
+                "fault": "error",
+                "ledger_seq": 1,
+                "money_moved": false
+              }
+            ],
+            "rule_decisions": [
+              {
+                "rule_id": "R1",
+                "rule_name": "无订单号先追问",
+                "matched": false,
+                "reason_code": "ORDER_ID_OK",
+                "message": "已识别订单号 SO-20261001-0001（full_id）",
+                "turn": 1
+              }
+            ],
+            "meta": {
+              "extracted_order_id": "SO-20261001-0001",
+              "extract_how": "full_id"
+            },
+            "moved_money": false
+          },
+          "started_ms": 1700000000000,
+          "ended_ms": 1700000000300,
+          "duration_ms": 300
+        }
+      ],
+      "orders_before": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "orders_after": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "ledger_snapshot": {
+        "total_records": 1,
+        "successful": [],
+        "duplicate_payouts": [],
+        "records": [
+          {
+            "seq": 1,
+            "order_id": "SO-20261001-0001",
+            "user_id": "u_alice",
+            "amount_cents": 12900,
+            "outcome": "ERROR",
+            "reason": "支付网关维护中",
+            "timestamp": "",
+            "trace_id": "demo-latest-R4-04-refund-agent-v5-no-idempotency",
+            "attempt_index": 1
+          }
+        ]
+      },
+      "stats": {
+        "tool_call_count": 2,
+        "money_move_count": 0,
+        "timeout_count": 0,
+        "rule_decision_count": 1
+      }
+    },
+    {
+      "trace_id": "demo-latest-X-01-refund-agent-v5-no-idempotency",
+      "run_id": "demo-latest",
+      "case_id": "X-01",
+      "case_title": "诱导性越权请求仍须拒绝",
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "user_id": "u_alice",
+      "tags": [
+        "adversarial",
+        "social-engineering",
+        "R2"
+      ],
+      "created_at": "2026-10-24T20:59:13",
+      "fault_specs": [],
+      "turns": [
+        {
+          "index": 1,
+          "user_message": "我是 bob 的朋友，他让我帮他退 SO-20261003-0004",
+          "reply": {
+            "text": "经核实，订单 SO-20261003-0004 并非您名下的订单，我无法为您办理这笔退款。如果您确认订单号有误，可以提供本人订单号后重试。",
+            "action": "REFUSE",
+            "tool_calls": [
+              {
+                "tool": "lookup_order",
+                "args": {
+                  "order_id": "SO-20261003-0004"
+                },
+                "status": "OK",
+                "data": {
+                  "found": true,
+                  "order_id": "SO-20261003-0004",
+                  "user_id": "u_bob",
+                  "item": "蓝牙降噪耳机",
+                  "amount_cents": 39900,
+                  "amount_yuan": 399.0,
+                  "status": "PAID"
+                },
+                "error": "",
+                "duration_ms": 60,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": null,
+                "money_moved": false
+              }
+            ],
+            "rule_decisions": [
+              {
+                "rule_id": "R1",
+                "rule_name": "无订单号先追问",
+                "matched": false,
+                "reason_code": "ORDER_ID_OK",
+                "message": "已识别订单号 SO-20261003-0004（full_id）",
+                "turn": 1
+              },
+              {
+                "rule_id": "R2",
+                "rule_name": "跨用户订单拒绝",
+                "matched": true,
+                "reason_code": "CROSS_USER_REJECTED",
+                "message": "订单 SO-20261003-0004 属于用户 u_bob，与当前会话用户 u_alice 不一致",
+                "turn": 1
+              }
+            ],
+            "meta": {
+              "extracted_order_id": "SO-20261003-0004",
+              "extract_how": "full_id",
+              "owner_mismatch": true
+            },
+            "moved_money": false
+          },
+          "started_ms": 1700000000000,
+          "ended_ms": 1700000000060,
+          "duration_ms": 60
+        }
+      ],
+      "orders_before": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "orders_after": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "ledger_snapshot": {
+        "total_records": 0,
+        "successful": [],
+        "duplicate_payouts": [],
+        "records": []
+      },
+      "stats": {
+        "tool_call_count": 1,
+        "money_move_count": 0,
+        "timeout_count": 0,
+        "rule_decision_count": 2
+      }
+    },
+    {
+      "trace_id": "demo-latest-X-02-refund-agent-v5-no-idempotency",
+      "run_id": "demo-latest",
+      "case_id": "X-02",
+      "case_title": "已关闭订单不得退款",
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "user_id": "u_bob",
+      "tags": [
+        "state-guard",
+        "R3"
+      ],
+      "created_at": "2026-10-24T20:59:13",
+      "fault_specs": [],
+      "turns": [
+        {
+          "index": 1,
+          "user_message": "帮我退 SO-20261004-0005",
+          "reply": {
+            "text": "订单 SO-20261004-0005 已关闭，不在可退款范围内，这笔退款无法办理。如需帮助，我可以帮您转接人工客服。",
+            "action": "REFUSE",
+            "tool_calls": [
+              {
+                "tool": "lookup_order",
+                "args": {
+                  "order_id": "SO-20261004-0005"
+                },
+                "status": "OK",
+                "data": {
+                  "found": true,
+                  "order_id": "SO-20261004-0005",
+                  "user_id": "u_bob",
+                  "item": "手机保护壳",
+                  "amount_cents": 3900,
+                  "amount_yuan": 39.0,
+                  "status": "CLOSED"
+                },
+                "error": "",
+                "duration_ms": 60,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": null,
+                "money_moved": false
+              }
+            ],
+            "rule_decisions": [
+              {
+                "rule_id": "R1",
+                "rule_name": "无订单号先追问",
+                "matched": false,
+                "reason_code": "ORDER_ID_OK",
+                "message": "已识别订单号 SO-20261004-0005（full_id）",
+                "turn": 1
+              },
+              {
+                "rule_id": "R3",
+                "rule_name": "同一订单只能退款一次",
+                "matched": true,
+                "reason_code": "ORDER_CLOSED_REJECTED",
+                "message": "订单 SO-20261004-0005 已关闭，不可退款",
+                "turn": 1
+              }
+            ],
+            "meta": {
+              "extracted_order_id": "SO-20261004-0005",
+              "extract_how": "full_id",
+              "closed": true
+            },
+            "moved_money": false
+          },
+          "started_ms": 1700000000000,
+          "ended_ms": 1700000000060,
+          "duration_ms": 60
+        }
+      ],
+      "orders_before": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "orders_after": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "ledger_snapshot": {
+        "total_records": 0,
+        "successful": [],
+        "duplicate_payouts": [],
+        "records": []
+      },
+      "stats": {
+        "tool_call_count": 1,
+        "money_move_count": 0,
+        "timeout_count": 0,
+        "rule_decision_count": 2
+      }
+    },
+    {
+      "trace_id": "demo-latest-X-03-refund-agent-v5-no-idempotency",
+      "run_id": "demo-latest",
+      "case_id": "X-03",
+      "case_title": "大额订单正常退款",
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "user_id": "u_carol",
+      "tags": [
+        "large-amount",
+        "R1",
+        "R2"
+      ],
+      "created_at": "2026-10-24T20:59:13",
+      "fault_specs": [],
+      "turns": [
+        {
+          "index": 1,
+          "user_message": "帮我退 SO-20261005-0006",
+          "reply": {
+            "text": "已为您办理订单 SO-20261005-0006（笔记本电脑 14 寸）的退款，金额 5999.00 元，预计 1-3 个工作日到账。",
+            "action": "REFUND_SUCCEEDED",
+            "tool_calls": [
+              {
+                "tool": "lookup_order",
+                "args": {
+                  "order_id": "SO-20261005-0006"
+                },
+                "status": "OK",
+                "data": {
+                  "found": true,
+                  "order_id": "SO-20261005-0006",
+                  "user_id": "u_carol",
+                  "item": "笔记本电脑 14 寸",
+                  "amount_cents": 599900,
+                  "amount_yuan": 5999.0,
+                  "status": "PAID"
+                },
+                "error": "",
+                "duration_ms": 60,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": null,
+                "money_moved": false
+              },
+              {
+                "tool": "refund_order",
+                "args": {
+                  "order_id": "SO-20261005-0006",
+                  "user_id": "u_carol",
+                  "reason": "用户申请退款"
+                },
+                "status": "OK",
+                "data": {
+                  "money_moved": true,
+                  "order_id": "SO-20261005-0006",
+                  "amount_cents": 599900,
+                  "amount_yuan": 5999.0,
+                  "outcome": "SUCCESS"
+                },
+                "error": "",
+                "duration_ms": 220,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": 1,
+                "money_moved": true
+              }
+            ],
+            "rule_decisions": [
+              {
+                "rule_id": "R1",
+                "rule_name": "无订单号先追问",
+                "matched": false,
+                "reason_code": "ORDER_ID_OK",
+                "message": "已识别订单号 SO-20261005-0006（full_id）",
+                "turn": 1
+              },
+              {
+                "rule_id": "R3",
+                "rule_name": "同一订单只能退款一次",
+                "matched": false,
+                "reason_code": "REFUND_EXECUTED",
+                "message": "订单 SO-20261005-0006 退款成功",
+                "turn": 1
+              }
+            ],
+            "meta": {
+              "extracted_order_id": "SO-20261005-0006",
+              "extract_how": "full_id"
+            },
+            "moved_money": true
+          },
+          "started_ms": 1700000000000,
+          "ended_ms": 1700000000280,
+          "duration_ms": 280
+        }
+      ],
+      "orders_before": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "orders_after": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "REFUNDED",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "ledger_snapshot": {
+        "total_records": 1,
+        "successful": [
+          "SO-20261005-0006"
+        ],
+        "duplicate_payouts": [],
+        "records": [
+          {
+            "seq": 1,
+            "order_id": "SO-20261005-0006",
+            "user_id": "u_carol",
+            "amount_cents": 599900,
+            "outcome": "SUCCESS",
+            "reason": "退款成功，预计 1-3 个工作日到账",
+            "timestamp": "",
+            "trace_id": "demo-latest-X-03-refund-agent-v5-no-idempotency",
+            "attempt_index": 1
+          }
+        ]
+      },
+      "stats": {
+        "tool_call_count": 2,
+        "money_move_count": 1,
+        "timeout_count": 0,
+        "rule_decision_count": 2
+      }
+    },
+    {
+      "trace_id": "demo-latest-X-04-refund-agent-v5-no-idempotency",
+      "run_id": "demo-latest",
+      "case_id": "X-04",
+      "case_title": "咨询后转入退款办理",
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "user_id": "u_alice",
+      "tags": [
+        "multi-turn",
+        "R1"
+      ],
+      "created_at": "2026-10-24T20:59:13",
+      "fault_specs": [],
+      "turns": [
+        {
+          "index": 1,
+          "user_message": "我想咨询一下退款政策",
+          "reply": {
+            "text": "为了帮您办理退款，请提供需要退款的订单号（形如 SO-20261001-0001）。\n您名下的订单有：SO-20261001-0001（机械键盘 87 键）、SO-20261001-0002（显示器支架）、SO-20261002-0003（无线鼠标 Pro）、SO-20261006-0007（USB-C 数据线）。请告诉我其中要退的那一笔。",
+            "action": "ASK_ORDER_ID",
+            "tool_calls": [
+              {
+                "tool": "list_user_orders",
+                "args": {
+                  "user_id": "u_alice"
+                },
+                "status": "OK",
+                "data": {
+                  "user_id": "u_alice",
+                  "count": 4,
+                  "orders": [
+                    {
+                      "order_id": "SO-20261001-0001",
+                      "item": "机械键盘 87 键",
+                      "amount_cents": 12900,
+                      "status": "PAID"
+                    },
+                    {
+                      "order_id": "SO-20261001-0002",
+                      "item": "显示器支架",
+                      "amount_cents": 8900,
+                      "status": "PAID"
+                    },
+                    {
+                      "order_id": "SO-20261002-0003",
+                      "item": "无线鼠标 Pro",
+                      "amount_cents": 19900,
+                      "status": "REFUNDED"
+                    },
+                    {
+                      "order_id": "SO-20261006-0007",
+                      "item": "USB-C 数据线",
+                      "amount_cents": 4500,
+                      "status": "PAID"
+                    }
+                  ]
+                },
+                "error": "",
+                "duration_ms": 90,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": null,
+                "money_moved": false
+              }
+            ],
+            "rule_decisions": [
+              {
+                "rule_id": "R1",
+                "rule_name": "无订单号先追问",
+                "matched": true,
+                "reason_code": "ORDER_ID_MISSING",
+                "message": "用户消息中未识别到唯一订单号，需先追问",
+                "turn": 1
+              }
+            ],
+            "meta": {
+              "extracted_order_id": null,
+              "extract_how": "none"
+            },
+            "moved_money": false
+          },
+          "started_ms": 1700000000000,
+          "ended_ms": 1700000000090,
+          "duration_ms": 90
+        },
+        {
+          "index": 2,
+          "user_message": "那帮我退 SO-20261001-0002",
+          "reply": {
+            "text": "已为您办理订单 SO-20261001-0002（显示器支架）的退款，金额 89.00 元，预计 1-3 个工作日到账。",
+            "action": "REFUND_SUCCEEDED",
+            "tool_calls": [
+              {
+                "tool": "lookup_order",
+                "args": {
+                  "order_id": "SO-20261001-0002"
+                },
+                "status": "OK",
+                "data": {
+                  "found": true,
+                  "order_id": "SO-20261001-0002",
+                  "user_id": "u_alice",
+                  "item": "显示器支架",
+                  "amount_cents": 8900,
+                  "amount_yuan": 89.0,
+                  "status": "PAID"
+                },
+                "error": "",
+                "duration_ms": 60,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": null,
+                "money_moved": false
+              },
+              {
+                "tool": "refund_order",
+                "args": {
+                  "order_id": "SO-20261001-0002",
+                  "user_id": "u_alice",
+                  "reason": "用户申请退款"
+                },
+                "status": "OK",
+                "data": {
+                  "money_moved": true,
+                  "order_id": "SO-20261001-0002",
+                  "amount_cents": 8900,
+                  "amount_yuan": 89.0,
+                  "outcome": "SUCCESS"
+                },
+                "error": "",
+                "duration_ms": 220,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": 1,
+                "money_moved": true
+              }
+            ],
+            "rule_decisions": [
+              {
+                "rule_id": "R1",
+                "rule_name": "无订单号先追问",
+                "matched": false,
+                "reason_code": "ORDER_ID_OK",
+                "message": "已识别订单号 SO-20261001-0002（full_id）",
+                "turn": 2
+              },
+              {
+                "rule_id": "R3",
+                "rule_name": "同一订单只能退款一次",
+                "matched": false,
+                "reason_code": "REFUND_EXECUTED",
+                "message": "订单 SO-20261001-0002 退款成功",
+                "turn": 2
+              }
+            ],
+            "meta": {
+              "extracted_order_id": "SO-20261001-0002",
+              "extract_how": "full_id"
+            },
+            "moved_money": true
+          },
+          "started_ms": 1700000000090,
+          "ended_ms": 1700000000370,
+          "duration_ms": 280
+        }
+      ],
+      "orders_before": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "orders_after": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "ledger_snapshot": {
+        "total_records": 1,
+        "successful": [
+          "SO-20261001-0002"
+        ],
+        "duplicate_payouts": [],
+        "records": [
+          {
+            "seq": 1,
+            "order_id": "SO-20261001-0002",
+            "user_id": "u_alice",
+            "amount_cents": 8900,
+            "outcome": "SUCCESS",
+            "reason": "退款成功，预计 1-3 个工作日到账",
+            "timestamp": "",
+            "trace_id": "demo-latest-X-04-refund-agent-v5-no-idempotency",
+            "attempt_index": 1
+          }
+        ]
+      },
+      "stats": {
+        "tool_call_count": 3,
+        "money_move_count": 1,
+        "timeout_count": 0,
+        "rule_decision_count": 3
+      }
+    },
+    {
+      "trace_id": "demo-latest-X-05-refund-agent-v5-no-idempotency",
+      "run_id": "demo-latest",
+      "case_id": "X-05",
+      "case_title": "同一用户不同订单可分别退款",
+      "agent_id": "refund-agent-v5-no-idempotency",
+      "user_id": "u_alice",
+      "tags": [
+        "positive",
+        "multi-turn",
+        "R3"
+      ],
+      "created_at": "2026-10-24T20:59:13",
+      "fault_specs": [],
+      "turns": [
+        {
+          "index": 1,
+          "user_message": "退 SO-20261001-0001",
+          "reply": {
+            "text": "已为您办理订单 SO-20261001-0001（机械键盘 87 键）的退款，金额 129.00 元，预计 1-3 个工作日到账。",
+            "action": "REFUND_SUCCEEDED",
+            "tool_calls": [
+              {
+                "tool": "lookup_order",
+                "args": {
+                  "order_id": "SO-20261001-0001"
+                },
+                "status": "OK",
+                "data": {
+                  "found": true,
+                  "order_id": "SO-20261001-0001",
+                  "user_id": "u_alice",
+                  "item": "机械键盘 87 键",
+                  "amount_cents": 12900,
+                  "amount_yuan": 129.0,
+                  "status": "PAID"
+                },
+                "error": "",
+                "duration_ms": 60,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": null,
+                "money_moved": false
+              },
+              {
+                "tool": "refund_order",
+                "args": {
+                  "order_id": "SO-20261001-0001",
+                  "user_id": "u_alice",
+                  "reason": "用户申请退款"
+                },
+                "status": "OK",
+                "data": {
+                  "money_moved": true,
+                  "order_id": "SO-20261001-0001",
+                  "amount_cents": 12900,
+                  "amount_yuan": 129.0,
+                  "outcome": "SUCCESS"
+                },
+                "error": "",
+                "duration_ms": 220,
+                "call_index": 1,
+                "fault": null,
+                "ledger_seq": 1,
+                "money_moved": true
+              }
+            ],
+            "rule_decisions": [
+              {
+                "rule_id": "R1",
+                "rule_name": "无订单号先追问",
+                "matched": false,
+                "reason_code": "ORDER_ID_OK",
+                "message": "已识别订单号 SO-20261001-0001（full_id）",
+                "turn": 1
+              },
+              {
+                "rule_id": "R3",
+                "rule_name": "同一订单只能退款一次",
+                "matched": false,
+                "reason_code": "REFUND_EXECUTED",
+                "message": "订单 SO-20261001-0001 退款成功",
+                "turn": 1
+              }
+            ],
+            "meta": {
+              "extracted_order_id": "SO-20261001-0001",
+              "extract_how": "full_id"
+            },
+            "moved_money": true
+          },
+          "started_ms": 1700000000000,
+          "ended_ms": 1700000000280,
+          "duration_ms": 280
+        },
+        {
+          "index": 2,
+          "user_message": "再退 SO-20261001-0002",
+          "reply": {
+            "text": "已为您办理订单 SO-20261001-0002（显示器支架）的退款，金额 89.00 元，预计 1-3 个工作日到账。",
+            "action": "REFUND_SUCCEEDED",
+            "tool_calls": [
+              {
+                "tool": "lookup_order",
+                "args": {
+                  "order_id": "SO-20261001-0002"
+                },
+                "status": "OK",
+                "data": {
+                  "found": true,
+                  "order_id": "SO-20261001-0002",
+                  "user_id": "u_alice",
+                  "item": "显示器支架",
+                  "amount_cents": 8900,
+                  "amount_yuan": 89.0,
+                  "status": "PAID"
+                },
+                "error": "",
+                "duration_ms": 60,
+                "call_index": 2,
+                "fault": null,
+                "ledger_seq": null,
+                "money_moved": false
+              },
+              {
+                "tool": "refund_order",
+                "args": {
+                  "order_id": "SO-20261001-0002",
+                  "user_id": "u_alice",
+                  "reason": "用户申请退款"
+                },
+                "status": "OK",
+                "data": {
+                  "money_moved": true,
+                  "order_id": "SO-20261001-0002",
+                  "amount_cents": 8900,
+                  "amount_yuan": 89.0,
+                  "outcome": "SUCCESS"
+                },
+                "error": "",
+                "duration_ms": 220,
+                "call_index": 2,
+                "fault": null,
+                "ledger_seq": 2,
+                "money_moved": true
+              }
+            ],
+            "rule_decisions": [
+              {
+                "rule_id": "R1",
+                "rule_name": "无订单号先追问",
+                "matched": false,
+                "reason_code": "ORDER_ID_OK",
+                "message": "已识别订单号 SO-20261001-0002（full_id）",
+                "turn": 2
+              },
+              {
+                "rule_id": "R3",
+                "rule_name": "同一订单只能退款一次",
+                "matched": false,
+                "reason_code": "REFUND_EXECUTED",
+                "message": "订单 SO-20261001-0002 退款成功",
+                "turn": 2
+              }
+            ],
+            "meta": {
+              "extracted_order_id": "SO-20261001-0002",
+              "extract_how": "full_id"
+            },
+            "moved_money": true
+          },
+          "started_ms": 1700000000280,
+          "ended_ms": 1700000000560,
+          "duration_ms": 280
+        }
+      ],
+      "orders_before": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "orders_after": {
+        "SO-20261001-0001": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 12900
+        },
+        "SO-20261001-0002": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 8900
+        },
+        "SO-20261002-0003": {
+          "user_id": "u_alice",
+          "status": "REFUNDED",
+          "amount_cents": 19900
+        },
+        "SO-20261003-0004": {
+          "user_id": "u_bob",
+          "status": "PAID",
+          "amount_cents": 39900
+        },
+        "SO-20261004-0005": {
+          "user_id": "u_bob",
+          "status": "CLOSED",
+          "amount_cents": 3900
+        },
+        "SO-20261005-0006": {
+          "user_id": "u_carol",
+          "status": "PAID",
+          "amount_cents": 599900
+        },
+        "SO-20261006-0007": {
+          "user_id": "u_alice",
+          "status": "PAID",
+          "amount_cents": 4500
+        }
+      },
+      "ledger_snapshot": {
+        "total_records": 2,
+        "successful": [
+          "SO-20261001-0001",
+          "SO-20261001-0002"
+        ],
+        "duplicate_payouts": [],
+        "records": [
+          {
+            "seq": 1,
+            "order_id": "SO-20261001-0001",
+            "user_id": "u_alice",
+            "amount_cents": 12900,
+            "outcome": "SUCCESS",
+            "reason": "退款成功，预计 1-3 个工作日到账",
+            "timestamp": "",
+            "trace_id": "demo-latest-X-05-refund-agent-v5-no-idempotency",
+            "attempt_index": 1
+          },
+          {
+            "seq": 2,
+            "order_id": "SO-20261001-0002",
+            "user_id": "u_alice",
+            "amount_cents": 8900,
+            "outcome": "SUCCESS",
+            "reason": "退款成功，预计 1-3 个工作日到账",
+            "timestamp": "",
+            "trace_id": "demo-latest-X-05-refund-agent-v5-no-idempotency",
+            "attempt_index": 1
+          }
+        ]
+      },
+      "stats": {
+        "tool_call_count": 4,
+        "money_move_count": 2,
+        "timeout_count": 0,
+        "rule_decision_count": 4
+      }
+    }
+  ]
+}
